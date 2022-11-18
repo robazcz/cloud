@@ -1,0 +1,17 @@
+<table>
+    {% for feed in feeds %}
+    <tr>
+        <td>{{ feed.id }}</td>
+        <td>{{ feed.name }}</td>
+        <td>{{ feed.date_created }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% if error_meassage %} <b>{{ error_meassage }}</b> {% endif %}
+
+<form method="post" action="{% url "new_feed" %}">
+{% csrf_token %}
+    <input type="text" name="feed_name">
+    <input type="submit" value="POST">
+</form>
