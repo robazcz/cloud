@@ -1,8 +1,13 @@
 <table>
+    <tr>
+        <th>ID</th>
+        <th>name</th>
+        <th>created</th>
+    </tr>
     {% for feed in feeds %}
     <tr>
         <td>{{ feed.id }}</td>
-        <td>{{ feed.name }}</td>
+        <td><a href="{% url "feed_view" feed.name %}">{{ feed.name }}</a></td>
         <td>{{ feed.date_created }}</td>
     </tr>
     {% endfor %}

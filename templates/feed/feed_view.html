@@ -1,0 +1,22 @@
+<h3>{{ feed.name }}</h3>
+
+<form method="post" action="{% url "new_data" feed.name %}">
+{% csrf_token %}
+    <input type="text" name="data_value">
+    <input type="submit" value="POST">
+</form>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>value</th>
+        <th>created</th>
+    </tr>
+    {% for dat in data %}
+        <tr>
+        <td>{{ dat.id }}</td>
+        <td>{{ dat.value }}</td>
+        <td>{{ dat.date_created }}</td>
+    </tr>
+    {% endfor %}
+</table>
