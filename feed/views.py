@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+
 from . import models
 
 def index(request):
@@ -37,3 +40,18 @@ def new_data(request, feed_name):
 
     return redirect("feed_view", feed_name)
     #return render(request, "feed/feed_view.html", {"feed": feed, "data": data})
+
+def users_login(request):
+    print(request.POST["username"])
+    username = request.POST["username"]
+    password = request.POST["password"]
+    redirect_to = request.POST["next"]
+    user = authenticate(request, username=username, password=password)
+
+    if user is not None:
+        login(request, user)
+        return redirect(redirect_to) if redirect_to else redirect("user_profile", username)
+
+@login_required
+def user_profile(request, username):
+    return render(request, "cloud/index.html")
