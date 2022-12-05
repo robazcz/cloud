@@ -18,6 +18,7 @@ def new_feed(request):
     return redirect("index")
     #return render(request, "feed/index.html", {"feeds": feeds})
 
+@login_required
 def feed_view(request, feed_name):
     try:
         feed = models.Feed.objects.get(name=feed_name)
@@ -43,12 +44,18 @@ def new_data(request, feed_name):
     #return render(request, "feed/feed_view.html", {"feed": feed, "data": data})
 
 def users_login(request):
-    try:
-        redirect_to = request.POST["next"]
-    except MultiValueDictKeyError:
-        redirect_to = None
+    # print(request.GET)
+    # print(request.GET.get("next", None))
+    # try:
+    #     redirect_to = request.POST["next"]
+    # except MultiValueDictKeyError:
+    #     redirect_to = None
+    if request.method == "GET":
+        redirect_to = request.GET.get("next", None)
+        print(redirect_to)
 
-    if request.method == "POST":
+    elif request.method == "POST":
+        redirect_to = request.POST.get("next", None)
         #print(request.POST["username"])
         username = request.POST["username"]
         password = request.POST["password"]
@@ -74,4 +81,9 @@ def users_login(request):
 def user_profile(request, username):
     # try:
     #     user = AUTH_USER_MODEL.query.get(username)
-    return render(request, "feed/index.html")
+    return render(request, "feed/users/profile.html", {"user":username})
+
+
+def users_logout(request):
+    logout(request)
+    return HttpResponse("Logged out")
