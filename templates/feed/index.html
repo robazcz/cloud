@@ -10,7 +10,7 @@
     {% for feed in feeds %}
     <tr>
         <td>{{ feed.id }}</td>
-        <td><a href="{% url "feed_view" feed.name %}">{{ feed.name }}</a></td>
+        <td><a href="{% url "feed_view" feed.owner__username feed.name %}">{{ feed.name }}</a></td>
         <td>{{ feed.date_created }}</td>
     </tr>
     {% endfor %}
