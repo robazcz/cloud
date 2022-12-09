@@ -54,6 +54,10 @@ def users_login(request):
     if request.method == "GET":
         redirect_to = request.GET.get("next", None)
         print(redirect_to)
+        
+        print(f"user? {request.user.is_authenticated}")
+        if request.user.is_authenticated:
+            return redirect("user_profile", request.user.username) if not redirect_to else redirect(redirect_to)
 
     elif request.method == "POST":
         redirect_to = request.POST.get("next", None)
@@ -88,8 +92,29 @@ def user_profile(request, username):
 
     return render(request, "feed/users/profile.html", {"user":username})
 
+@login_required
+def user_profile_base(request):
+    return redirect("user_profile", request.user.username)
+
 def users_logout(request):
-    if request.user:
+    if request.user.is_authenticated:
         logout(request)
         return HttpResponse(f"Logged out")
 
+def users_register(request):
+    if not request.user.is_authenticated:
+        if request.method == "GET":
+            return render(request, "feed/users/register.html")
+        
+        elif request.method == "POST":
+            user = models.User.objects.create_user(username=request.POST["username"], password=request.POST["password"])
+            user.save()
+            #TypeError
+            login(request, user)
+            return redirect("users_login")
+
+    else:
+        return redirect("user_profile_base")
+    
+    
+    
