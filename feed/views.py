@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, HttpResponseForbidden
 from django.contrib.auth import authenticate, login, logout
@@ -6,7 +7,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 
 from . import models
 
-def index(request):
+def feed(request):
     feeds = models.Feed.objects.all().values("id", "name", "date_created", "owner__username")
     print(feeds)
     return render(request, "feed/index.html", {"feeds": feeds})
@@ -50,7 +51,7 @@ def users_login(request):
     # try:
     #     redirect_to = request.POST["next"]
     # except MultiValueDictKeyError:
-    #     redirect_to = None
+    redirect_to = None
     if request.method == "GET":
         redirect_to = request.GET.get("next", None)
         print(redirect_to)
@@ -78,9 +79,9 @@ def users_login(request):
             login(request, user)
             return redirect(redirect_to, args)
         else:
-            return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": True}})
+            return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": True}, "user":request.user})
 
-    return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": False}})
+    return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": False}, "user": request.user})
 
 def match_logged_user(logged, user):
     return logged.username == user
@@ -88,9 +89,10 @@ def match_logged_user(logged, user):
 @login_required
 def user_profile(request, username):
     if not match_logged_user(request.user, username):
-        return HttpResponseForbidden("You are NOT ALLOWED to see this!")
+        return HttpResponseForbidden(render(request, "feed/not_allowed.html"))
+        #return HttpResponseForbidden("You are NOT ALLOWED to see this!")
 
-    return render(request, "feed/users/profile.html", {"user":username})
+    return render(request, "feed/users/profile.html", {"user": request.user})
 
 @login_required
 def user_profile_base(request):
@@ -99,7 +101,8 @@ def user_profile_base(request):
 def users_logout(request):
     if request.user.is_authenticated:
         logout(request)
-        return HttpResponse(f"Logged out")
+        return redirect("users_login")
+        #return HttpResponse(f"Logged out")
 
 def users_register(request):
     if not request.user.is_authenticated:
@@ -107,7 +110,13 @@ def users_register(request):
             return render(request, "feed/users/register.html")
         
         elif request.method == "POST":
-            user = models.User.objects.create_user(username=request.POST["username"], password=request.POST["password"])
+            try: #TODO: sračka se uloží! :€
+                user = models.User.objects.create_user(username=request.POST["username"], password=request.POST["password"])
+                user.clean()
+            except ValidationError as err:
+                form = {"errors":err}
+                return render(request, "feed/users/register.html", {"form": form})
+
             user.save()
             #TypeError
             login(request, user)

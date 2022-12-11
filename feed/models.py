@@ -1,8 +1,14 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+import re
 
 class User(AbstractUser):
-    pass
+    def clean(self):
+        super().clean()
+        pattern = re.compile("^[a-zA-Z1-9]+$")
+        if not pattern.match(self.username):
+            raise ValidationError("username contains invalid character")
 
 class Feed(models.Model):
     name = models.CharField(max_length=20)

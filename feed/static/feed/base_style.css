@@ -1,0 +1,40 @@
+:root{
+  --bg: #222831;
+  --fg: #393e46;
+  --hl: #f96d00;
+  --tx: #d7d7d7;
+}
+
+body{
+  background-color: var(--bg);
+  color: var(--tx);
+}
+
+header ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: var(--fg);
+}
+
+header li {
+  float: left;
+}
+
+header li a {
+  display: block;
+  color: var(--tx);
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.error{
+  color: red;
+  font-weight: bold;
+}
+
+.err-img{
+
+}

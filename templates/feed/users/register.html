@@ -5,7 +5,7 @@
 <h2>REGISTRATION</h2>
 
 {% if form.errors %}
-    <p>Your username and password didn't match. Please try again.</p>
+    <p>{{ form.errors.0 }}</p>
 {% else %}
     <p></p>
   {% endif %}
