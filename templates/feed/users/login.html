@@ -20,16 +20,17 @@
   <form method="post" action="{% url 'users_login' %}">
     {% csrf_token %}
     <table>
-      <tr>
+      {{ form.form }}
+      <!-- <tr>
         <td>username: </td>
         <td><input type="text" name="username" placeholder="Username"></td>
       </tr>
       <tr>
         <td>password: </td>
         <td><input type="password" name="password" placeholder="Password"></td>
-      </tr>
+      </tr>-->
+      
     </table>
-
       <input type="submit" value="login">
       <input type="hidden" name="next" value="{{ next }}">
   </form>

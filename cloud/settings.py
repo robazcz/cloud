@@ -128,3 +128,10 @@ AUTH_USER_MODEL = 'feed.User'
 
 LOGIN_URL = 'users_login'
 LOGIN_REDIRECT_URL = 'user_profile'
+
+# from django.forms.renderers import TemplatesSetting
+
+# class CustomFormRenderer(TemplatesSetting):
+#     form_template_name = "feed/form_snippet.html"
+
+# FORM_RENDERER = "cloud.settings.CustomFormRenderer"

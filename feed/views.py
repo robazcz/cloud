@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.datastructures import MultiValueDictKeyError
 
-from . import models
+from . import models, forms
 
 def feed(request):
     feeds = models.Feed.objects.all().values("id", "name", "date_created", "owner__username")
@@ -79,9 +79,9 @@ def users_login(request):
             login(request, user)
             return redirect(redirect_to, args)
         else:
-            return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": True}, "user":request.user})
+            return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": True, "form": forms.LoginForm(request.POST)}, "user":request.user})
 
-    return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": False}, "user": request.user})
+    return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": False, "form": forms.LoginForm}, "user": request.user})
 
 def match_logged_user(logged, user):
     return logged.username == user
@@ -110,7 +110,7 @@ def users_register(request):
             return render(request, "feed/users/register.html")
         
         elif request.method == "POST":
-            try: #TODO: sračka se uloží! :€
+            try:
                 user = models.User.objects.create_user(username=request.POST["username"], password=request.POST["password"])
                 user.clean()
             except ValidationError as err:
