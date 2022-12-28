@@ -1,7 +1,12 @@
 {% extends "feed/base.html" %}
+{% block title %}Feeds{% endblock %}
+{% block feeds %}enabled{% endblock %}
 
 {% block body %}
-<table>
+
+<h2>Your feeds</h2>
+
+<table class="feeds">
     <tr>
         <th>ID</th>
         <th>name</th>
@@ -11,16 +16,17 @@
     <tr>
         <td>{{ feed.id }}</td>
         <td><a href="{% url "feed_view" feed.owner__username feed.name %}">{{ feed.name }}</a></td>
-        <td>{{ feed.date_created }}</td>
+        <td>{{ feed.date_created|date:"j. n. Y G:i" }}</td>
     </tr>
     {% endfor %}
 </table>
 
-{% if error_meassage %} <b>{{ error_meassage }}</b> {% endif %}
+{% if errors %} <p class="error">Feed s tímto jménem již existuje nebo obsahuje zakázané znaky</p> {% endif %}
 
-<form method="post" action="{% url "new_feed" %}">
+<form method="post" action="{% url "feed_list" %}">
 {% csrf_token %}
-    <input type="text" name="feed_name">
+    {{ form.as_p }}
+{#    <input type="text" name="feed_name">#}
     <input type="submit" value="POST">
 </form>
 

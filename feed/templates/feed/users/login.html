@@ -8,7 +8,7 @@
     <p></p>
   {% endif %}
 
-{#  {% if next %}#}
+{#  {% if next %}TODO: https://docs.djangoproject.com/en/4.1/topics/forms/#}
 {#    {% if user.is_authenticated %}#}
 {#      <p>Your account doesn't have access to this page. To proceed,#}
 {#      please login with an account that has access.</p>#}
@@ -29,12 +29,12 @@
         <td>password: </td>
         <td><input type="password" name="password" placeholder="Password"></td>
       </tr>-->
-      
+
     </table>
       <input type="submit" value="login">
       <input type="hidden" name="next" value="{{ next }}">
   </form>
-
+    <a href="{% url 'users_register' %}">Registration</a>
   {# Assumes you setup the password_reset view in your URLconf #}
   {#<p><a href="{% url 'password_reset' %}">Lost password?</a></p>#}
 

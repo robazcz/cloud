@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'feed/base_style.css' %}">
+    <title>{% block title %}default title{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <ul><li class="logo"><a href="">Cloud</a></li>
+            <li><a class="{% block feeds %}{% endblock %}" href="{% url 'feed_list' %}">feeds</a></li>
+            <li style="margin-left:auto"><a class="{% block profile %}{% endblock %}" href="{% url 'user_profile_base' %}">{% if user.is_authenticated %}{{ user }}{% else %}Login{% endif %}</a></li>
+        </ul>
+    </header>
+    <main>
+        {% block body %} default text {% endblock %}
+    </main>
+</body>
+</html>

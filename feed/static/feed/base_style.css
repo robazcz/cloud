@@ -1,33 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap');
+
 :root{
-  --bg: #222831;
+  --bg: #181a1b;
   --fg: #393e46;
   --hl: #f96d00;
   --tx: #d7d7d7;
 }
 
 body{
+  font-family: 'Rubik', sans-serif;
   background-color: var(--bg);
   color: var(--tx);
 }
 
+main{
+  margin: 2em
+}
+
 header ul {
-  list-style-type: none;
+  display: flex;
+  background-color: var(--fg);
+  overflow: hidden;
+  height: 2.5em;
+  width: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
-  background-color: var(--fg);
+  list-style-type: none;
+  align-items: center;
+  text-align: center;
 }
 
 header li {
   float: left;
+  #display: inline-block;
 }
 
 header li a {
   display: block;
   color: var(--tx);
-  text-align: center;
-  padding: 14px 16px;
   text-decoration: none;
+  height: 100%;
+  padding: 14px 16px;
+}
+
+header li a:hover, header li a.enabled{
+  background-color: #292d33;
+}
+
+.logo a{
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5em;
+  padding: 0 10px;
+}
+
+.logo a:hover {
+  background-color: inherit;
 }
 
 .error{
@@ -37,4 +65,42 @@ header li a {
 
 .err-img{
 
+}
+
+/*.feeds, .feeds td, .feeds th{*/
+/*  border: 1px solid gray;*/
+/*}*/
+
+.feeds{
+  width: 50%;
+  border-collapse: collapse;
+  background-color: #292d33;
+  min-width: 33em;
+}
+
+.feeds tr:nth-child(even){
+  background-color: #151a1e;
+}
+
+.feeds th{
+  height: 2em;
+  background-color: black;
+  border-bottom: 1px solid var(--tx);
+}
+
+.feeds th, .feeds td{
+  padding: 0.75em;
+  text-align: left;
+}
+
+.feeds a{
+  color: #e7e571;
+  padding: 0.5em 1em 0.5em 1em;
+  text-decoration: none;
+  /*background-color: white;*/
+  /*border-radius: 1em;*/
+}
+
+.feeds a:hover{
+  text-decoration: underline;
 }

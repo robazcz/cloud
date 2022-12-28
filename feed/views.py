@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, HttpResponseForbidden
 from django.contrib.auth import authenticate, login, logout
@@ -7,18 +8,25 @@ from django.utils.datastructures import MultiValueDictKeyError
 
 from . import models, forms
 
-def feed(request):
-    feeds = models.Feed.objects.all().values("id", "name", "date_created", "owner__username")
-    print(feeds)
-    return render(request, "feed/index.html", {"feeds": feeds})
-
 @login_required
-def new_feed(request):
-    feeds = models.Feed.objects.all().values()
-    new_f = models.Feed(name=request.POST["feed_name"], owner_id=request.user.id)
-    new_f.save()
-    return redirect("index")
-    #return render(request, "feed/index.html", {"feeds": feeds})
+def feed_list(request):
+    if request.method != "POST":
+        feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
+        #print(feeds)
+
+    elif request.method == "POST":
+        miss_i = models.Feed(owner_id=request.user.id)
+        new_f = forms.NewFeed(request.POST, instance=miss_i)
+        try:
+            new_f.save()
+        except (IntegrityError, ValueError):
+            feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
+            return render(request, "feed/feed_list.html", {"user": request.user, "form": forms.NewFeed(request.POST), "feeds": feeds, "errors": True})
+
+        feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
+        return render(request, "feed/feed_list.html", {"user":request.user, "form": forms.NewFeed, "feeds": feeds})
+
+    return render(request, "feed/feed_list.html", {"user":request.user, "form": forms.NewFeed , "feeds": feeds})
 
 @login_required
 def feed_view(request, username, feed_name):
@@ -81,7 +89,8 @@ def users_login(request):
         else:
             return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": True, "form": forms.LoginForm(request.POST)}, "user":request.user})
 
-    return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": False, "form": forms.LoginForm}, "user": request.user})
+    return render(request, "feed/users/login.html", {"next": redirect_to, "form": {"errors": False, "form":forms.LoginForm}, "user": request.user})
+    #return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": False}, "user": request.user})
 
 def match_logged_user(logged, user):
     return logged.username == user
@@ -107,17 +116,16 @@ def users_logout(request):
 def users_register(request):
     if not request.user.is_authenticated:
         if request.method == "GET":
-            return render(request, "feed/users/register.html")
+            return render(request, "feed/users/register.html", {"form": {"errors":None, "form":forms.LoginForm}})
         
         elif request.method == "POST":
             try:
-                user = models.User.objects.create_user(username=request.POST["username"], password=request.POST["password"])
+                user = models.User(username=request.POST["username"], password=request.POST["password"])
                 user.clean()
+                user.save()
             except ValidationError as err:
-                form = {"errors":err}
-                return render(request, "feed/users/register.html", {"form": form})
+                return render(request, "feed/users/register.html", {"form": {"errors":err, "form":forms.LoginForm}})
 
-            user.save()
             #TypeError
             login(request, user)
             return redirect("users_login")

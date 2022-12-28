@@ -1,0 +1,10 @@
+{% extends "feed/base.html" %}
+{% block title %}Userprofile{% endblock %}
+{% block profile %}enabled{% endblock %}
+
+{% block body %}
+
+<h1>Profile of {{ user }}</h1>
+<a href="{% url 'users_logout' %}">logout!</a>
+
+{% endblock %}
