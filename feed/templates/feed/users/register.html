@@ -4,16 +4,11 @@
 
 <h2>REGISTRATION</h2>
 
-{% if form.errors %}
-    <p>{{ form.errors.message }}</p>
-{% else %}
-    <p></p>
-  {% endif %}
 
-  <form method="post" action="{% url 'users_register' %}">
+<form method="post" action="{% url 'users_register' %}">
     {% csrf_token %}
     <table>
-        {{ form.form }}
+    {{ form.form }}
 {#      <tr>#}
 {#        <td>username: </td>#}
 {#        <td><input type="text" name="username" placeholder="Username"></td>#}
@@ -22,6 +17,10 @@
 {#        <td>password: </td>#}
 {#        <td><input type="password" name="password" placeholder="Password"></td>#}
 {#      </tr>#}
+
+    {% if form.errors %} {% for _, error in form.errors.items %}{% for err in error %}
+        <tr><td colspan=2 class="error small_err">{{ err.message }}</td></tr>
+    {% endfor %}{% endfor %} {% endif %}
     </table>
 
       <input type="submit" value="register">

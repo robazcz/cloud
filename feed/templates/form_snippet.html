@@ -1,8 +1,7 @@
-<table>
+
 {% for field in form %}
 <tr>
     <th>{% if field.label %}{{ field.label_tag }}{% endif %}</th>
     <td>{{ field }}</td>
 </tr>
 {% endfor %}
-</table>

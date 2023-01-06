@@ -10,11 +10,7 @@ from . import models, forms
 
 @login_required
 def feed_list(request):
-    if request.method != "POST":
-        feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
-        #print(feeds)
-
-    elif request.method == "POST":
+    if request.method == "POST":
         miss_i = models.Feed(owner_id=request.user.id)
         new_f = forms.NewFeed(request.POST, instance=miss_i)
         try:
@@ -25,6 +21,10 @@ def feed_list(request):
 
         feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
         return render(request, "feed/feed_list.html", {"user":request.user, "form": forms.NewFeed, "feeds": feeds})
+
+    else:
+        feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
+        # print(feeds)
 
     return render(request, "feed/feed_list.html", {"user":request.user, "form": forms.NewFeed , "feeds": feeds})
 
@@ -110,7 +110,7 @@ def user_profile_base(request):
 def users_logout(request):
     if request.user.is_authenticated:
         logout(request)
-        return redirect("users_login")
+    return redirect("users_login")
         #return HttpResponse(f"Logged out")
 
 def users_register(request):
@@ -119,14 +119,16 @@ def users_register(request):
             return render(request, "feed/users/register.html", {"form": {"errors":None, "form":forms.LoginForm}})
         
         elif request.method == "POST":
+            user = forms.LoginForm(request.POST)
             try:
-                user = models.User(username=request.POST["username"], password=request.POST["password"])
-                user.clean()
+                if user.errors:
+                    #print(f"valid? {user.errors.as_json()}")
+                    raise ValidationError("Error validation form")
                 user.save()
-            except ValidationError as err:
-                return render(request, "feed/users/register.html", {"form": {"errors":err, "form":forms.LoginForm}})
+            # user.clean()
+            except (IntegrityError, ValueError, ValidationError):
+                return render(request, "feed/users/register.html", {"form": {"errors":user.errors.as_data(), "form":forms.LoginForm(request.POST)}})
 
-            #TypeError
             login(request, user)
             return redirect("users_login")
 
