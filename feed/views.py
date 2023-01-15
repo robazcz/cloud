@@ -1,13 +1,24 @@
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, Http404, HttpResponseForbidden
+from django.http import HttpResponse, Http404, HttpResponseForbidden, JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.datastructures import MultiValueDictKeyError
 
+from rest_framework import viewsets, permissions
+from . import serializers
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.parsers import JSONParser
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework import status
+from . import api_permissions
+
 from . import models, forms
 
+def root(request):
+    return redirect("feed_list")
 @login_required
 def feed_list(request):
     if request.method == "POST":
@@ -135,5 +146,27 @@ def users_register(request):
     else:
         return redirect("user_profile_base")
     
-    
-    
+### API ###
+"""
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = models.User.objects.all().order_by('-date_joined')
+    serializer_class = serializers.UserSerialilzer
+    permission_classes = [permissions.IsAuthenticated]
+"""
+
+#@csrf_exempt
+@api_view(["GET","POST"]) #https://www.django-rest-framework.org/tutorial/4-authentication-and-permissions/#object-level-permissions
+@permission_classes([api_permissions.IsOwner]) #TODO: check_object_permissions, generating tokens for api https://www.django-rest-framework.org/api-guide/authentication/#generating-tokens
+def api_users(request):
+    if request.method == "GET":
+        users = models.User.objects.all()
+        serial_users = serializers.UserSerialilzer(users, many=True)
+        return Response(serial_users.data)
+
+    elif request.method == "POST":
+        data = JSONParser().parse(request)
+        #print(data)
+        serializer = serializers.UserSerialilzer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response("valid" if serializer.is_valid() else "invalid", status=status.HTTP_201_CREATED)

@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "rest_framework",
     "feed.apps.FeedConfig",
     'django.contrib.admin',
     'django.contrib.auth',
@@ -135,3 +136,8 @@ LOGIN_REDIRECT_URL = 'user_profile'
 #     form_template_name = "feed/form_snippet.html"
 
 # FORM_RENDERER = "cloud.settings.CustomFormRenderer"
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
