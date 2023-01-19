@@ -150,7 +150,7 @@ def users_register(request):
 """
 class UserViewSet(viewsets.ModelViewSet):
     queryset = models.User.objects.all().order_by('-date_joined')
-    serializer_class = serializers.UserSerialilzer
+    serializer_class = serializers.UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 """
 
@@ -160,13 +160,31 @@ class UserViewSet(viewsets.ModelViewSet):
 def api_users(request):
     if request.method == "GET":
         users = models.User.objects.all()
-        serial_users = serializers.UserSerialilzer(users, many=True)
+        serial_users = serializers.UserSerializer(users, many=True)
         return Response(serial_users.data)
 
     elif request.method == "POST":
         data = JSONParser().parse(request)
         #print(data)
-        serializer = serializers.UserSerialilzer(data=data)
+        serializer = serializers.UserSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response("valid" if serializer.is_valid() else "invalid", status=status.HTTP_201_CREATED)
+
+@api_view(["GET", "POST"])
+@permission_classes([permissions.IsAuthenticated])
+def api_data(request, username, feed_name):
+    try:
+        feed = models.Feed.objects.get(name=feed_name, owner__username=username)
+    except models.Feed.DoesNotExist:
+        raise Http404(f"Feed with name {feed_name} does not exist.")
+
+    if match_logged_user(request.user, username):
+        feeds_data = models.Data.objects.filter(feed__id=feed.id)
+        data_serialized = serializers.DataSerializer(feeds_data, many=True)
+        return Response(data_serialized.data)
+    
+    else: 
+        raise Http404(f"Feed with name {feed_name} does not exist.")
+
+    return Response(f"{request.method} request on api_data")

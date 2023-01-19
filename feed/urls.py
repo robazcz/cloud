@@ -30,5 +30,6 @@ urlpatterns += [
 ]
 
 urlpatterns += [
-    path("api/", views.api_users, name="api_users")
+    path("api/", views.api_users, name="api_users"),
+    path("api/<str:username>/<str:feed_name>/data/", views.api_data, name="api_data")
 ]
