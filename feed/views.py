@@ -174,12 +174,12 @@ def api_users(request):
 @api_view(["GET", "POST"])
 @permission_classes([permissions.IsAuthenticated])
 def api_data(request, username, feed_name):
-    try:
-        feed = models.Feed.objects.get(name=feed_name, owner__username=username)
-    except models.Feed.DoesNotExist:
-        raise Http404(f"Feed with name {feed_name} does not exist.")
-
     if match_logged_user(request.user, username):
+        try:
+            feed = models.Feed.objects.get(name=feed_name, owner__username=username)
+        except models.Feed.DoesNotExist:
+            raise Http404(f"Feed with name {feed_name} does not exist.")
+
         feeds_data = models.Data.objects.filter(feed__id=feed.id)
         data_serialized = serializers.DataSerializer(feeds_data, many=True)
         return Response(data_serialized.data)
@@ -188,3 +188,13 @@ def api_data(request, username, feed_name):
         raise Http404(f"Feed with name {feed_name} does not exist.")
 
     return Response(f"{request.method} request on api_data")
+
+@api_view(["GET", "POST"])
+@permission_classes([permissions.IsAuthenticated])
+def api_feeds(request, username):
+    if match_logged_user(request.user, username):
+        feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
+        feeds_serialized = serializers.FeedSerializer(feeds, many=True)
+        return Response(feeds_serialized.data)
+    else:
+        raise Http404()
