@@ -174,20 +174,35 @@ def api_users(request):
 @api_view(["GET", "POST"])
 @permission_classes([permissions.IsAuthenticated])
 def api_data(request, username, feed_name):
-    if match_logged_user(request.user, username):
-        try:
-            feed = models.Feed.objects.get(name=feed_name, owner__username=username)
-        except models.Feed.DoesNotExist:
-            raise Http404(f"Feed with name {feed_name} does not exist.")
+        if match_logged_user(request.user, username):
+            try:
+                feed = models.Feed.objects.get(name=feed_name, owner__username=username)
+                print(feed)
+            except models.Feed.DoesNotExist:
+                print("feed does not exist")
+                return Response({'error':f'Feed with name \'{feed_name}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
-        feeds_data = models.Data.objects.filter(feed__id=feed.id)
-        data_serialized = serializers.DataSerializer(feeds_data, many=True)
-        return Response(data_serialized.data)
-    
-    else: 
-        raise Http404(f"Feed with name {feed_name} does not exist.")
+            if request.method == "POST":
+                serial_data = serializers.DataSerializer(data=request.data)
+                ################    serial_data.update({"feed":feed})
+                print(serial_data.initial_data)
+                if serial_data.is_valid():
+                    serial_data.save()
+                    return Response({'status':'Successfully created.'}, status=status.HTTP_201_CREATED)
+                
+                else:
+                    return Response({'error':'Data is not valid.'}, status=status.HTTP_400_BAD_REQUEST)            
 
-    return Response(f"{request.method} request on api_data")
+            else:
+                feeds_data = models.Data.objects.filter(feed__id=feed.id)
+                data_serialized = serializers.DataSerializer(feeds_data, many=True)
+                return Response(data_serialized.data)
+        
+        else: 
+            print("user dont match")
+            return Response({'error':f'Feed with name \'{feed_name}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+
+
 
 @api_view(["GET", "POST"])
 @permission_classes([permissions.IsAuthenticated])
