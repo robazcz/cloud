@@ -127,20 +127,21 @@ def users_logout(request):
 def users_register(request):
     if not request.user.is_authenticated:
         if request.method == "GET":
-            return render(request, "feed/users/register.html", {"form": {"errors":None, "form":forms.LoginForm}})
+            return render(request, "feed/users/register.html", {"form": {"errors":None, "form":forms.RegisterForm}})
         
         elif request.method == "POST":
-            user = forms.LoginForm(request.POST)
+            user = forms.RegisterForm(request.POST)
+            #user_inst = models.User.objects.create_user(username=request.POST["username"], password=request.POST["password"])
             try:
-                if user.errors:
+                if user.errors or not user.is_valid:
                     #print(f"valid? {user.errors.as_json()}")
-                    raise ValidationError("Error validation form")
-                user.save()
+                    raise ValidationError("Error validating form")
+                user_inst = user.save()
             # user.clean()
             except (IntegrityError, ValueError, ValidationError):
-                return render(request, "feed/users/register.html", {"form": {"errors":user.errors.as_data(), "form":forms.LoginForm(request.POST)}})
+                return render(request, "feed/users/register.html", {"form": {"errors":user.errors.as_data(), "form":forms.RegisterForm(request.POST)}})
 
-            login(request, user)
+            login(request, user_inst)
             return redirect("users_login")
 
     else:
@@ -177,7 +178,7 @@ def api_data(request, username, feed_name):
         if match_logged_user(request.user, username):
             try:
                 feed = models.Feed.objects.get(name=feed_name, owner__username=username)
-                print(feed)
+                #print(feed)
             except models.Feed.DoesNotExist:
                 print("feed does not exist")
                 return Response({'error':f'Feed with name \'{feed_name}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)
@@ -187,7 +188,7 @@ def api_data(request, username, feed_name):
                 ################    serial_data.update({"feed":feed})
                 print(serial_data.initial_data)
                 if serial_data.is_valid():
-                    serial_data.save()
+                    serial_data.save(feed=feed)
                     return Response({'status':'Successfully created.'}, status=status.HTTP_201_CREATED)
                 
                 else:
@@ -203,13 +204,30 @@ def api_data(request, username, feed_name):
             return Response({'error':f'Feed with name \'{feed_name}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
 
-
 @api_view(["GET", "POST"])
 @permission_classes([permissions.IsAuthenticated])
 def api_feeds(request, username):
     if match_logged_user(request.user, username):
-        feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
-        feeds_serialized = serializers.FeedSerializer(feeds, many=True)
-        return Response(feeds_serialized.data)
+        try:
+            feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
+        except models.User.DoesNotExist:
+            print("feed does not exist")
+            return Response({'error': f'User with name \'{username}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == "POST":
+            serialized_feed = serializers.FeedSerializer(data=request.data)
+            print(serialized_feed.initial_data)
+            if serialized_feed.is_valid():
+                user = models.User.objects.get(username=username)
+                serialized_feed.save(owner=user)
+                return Response({'status':f'Feed \'{serialized_feed.data.get("name")}\' successfully created.'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'error': 'Feed is not valid.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        else:
+            feeds_serialized = serializers.FeedSerializer(feeds, many=True)
+            return Response(feeds_serialized.data)
+
     else:
-        raise Http404()
+        print("feed does not exist")
+        return Response({'error': f'User with name \'{username}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)

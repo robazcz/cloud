@@ -109,3 +109,7 @@ header li a:hover, header li a.enabled{
   font-weight: normal;
   font-size: 0.75em;
 }
+
+.user th{
+  text-align: right;
+}
