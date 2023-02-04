@@ -1,7 +1,15 @@
 
 {% for field in form %}
+
+{% if field.errors %}
+<tr>
+    <th></th>
+    <td class="error small_err err_cell">{{ field.errors }}</td>
+</tr>
+{% endif %}
+
 <tr>
     <th>{% if field.label %}{{ field.label_tag }}{% endif %}</th>
-    <td>{{ field }}</td>
+    <td class="{% if field.errors %}err_input_cell{% endif %}">{{ field }}</td>
 </tr>
 {% endfor %}

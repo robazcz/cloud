@@ -4,6 +4,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 import re
 
+from django.db.models.functions import Lower
+
+
 class User(AbstractUser):
     username = models.CharField(
         "username",
@@ -14,6 +17,10 @@ class User(AbstractUser):
         #validators=[username_validator] #https://docs.djangoproject.com/en/4.1/ref/forms/validation/
     )
 
+    class Meta:
+        constraints = [  # TODO: https://stackoverflow.com/questions/36330677/django-model-set-default-charfield-in-lowercase ## zachovat velikosti registrace?
+            models.UniqueConstraint(Lower("username"), name="unique_lower_username")
+        ]
     # def clean(self): #validace jiným způsobem
     #     super().clean()
     #     pattern = re.compile("^[a-zA-Z0-9-_.]+$")

@@ -18,9 +18,13 @@
 {#        <td><input type="password" name="password" placeholder="Password"></td>#}
 {#      </tr>#}
 
-    {% if form.errors %} {% for _, error in form.errors.items %}{% for err in error %}
-        <tr><td colspan=2 class="error small_err">{{ err.message }}</td></tr>
-    {% endfor %}{% endfor %} {% endif %}
+{#    {% if form.errors %} {% for _, error in form.errors.items %}{% for err in error %}#}
+{#        <tr><td colspan=2 class="error small_err">{{ err.messages.0 }}</td></tr>#}
+{#    {% endfor %}{% endfor %} {% endif %}#}
+
+        {% if form.errors_more %} {% for err in form.errors_more %}
+        <tr><td colspan=2 class="error small_err"> {{ err }} </td> </tr>
+        {% endfor %} {% endif %}
     </table>
 
       <input type="submit" value="register">

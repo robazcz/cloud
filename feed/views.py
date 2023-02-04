@@ -139,7 +139,9 @@ def users_register(request):
                 user_inst = user.save()
             # user.clean()
             except (IntegrityError, ValueError, ValidationError):
-                return render(request, "feed/users/register.html", {"form": {"errors":user.errors.as_data(), "form":forms.RegisterForm(request.POST)}})
+                ex = user.errors.as_data()
+                print(ex["__all__"][0].message)
+                return render(request, "feed/users/register.html", {"form": {"errors":ex, "errors_more":ex["__all__"][0].messages, "form":forms.RegisterForm(request.POST)}})
 
             login(request, user_inst)
             return redirect("users_login")

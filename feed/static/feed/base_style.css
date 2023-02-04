@@ -110,6 +110,16 @@ header li a:hover, header li a.enabled{
   font-size: 0.75em;
 }
 
+.err_cell .errorlist{
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.err_input_cell input{
+  border: 2px solid red;
+}
+
 .user th{
   text-align: right;
 }
