@@ -22,9 +22,9 @@
 {#        <tr><td colspan=2 class="error small_err">{{ err.messages.0 }}</td></tr>#}
 {#    {% endfor %}{% endfor %} {% endif %}#}
 
-        {% if form.errors_more %} {% for err in form.errors_more %}
-        <tr><td colspan=2 class="error small_err"> {{ err }} </td> </tr>
-        {% endfor %} {% endif %}
+        {% if form.error %} 
+        <tr><td colspan=2 class="error small_err"> Error </td> </tr>
+        {% endif %}
     </table>
 
       <input type="submit" value="register">

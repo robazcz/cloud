@@ -130,7 +130,7 @@ def users_register(request):
             return render(request, "feed/users/register.html", {"form": {"errors":None, "form":forms.RegisterForm}})
         
         elif request.method == "POST":
-            user = forms.RegisterForm(request.POST)
+            user = forms.RegisterForm(request.POST)  #TODO: ke každý práci s username - lower username, přidat original username field
             #user_inst = models.User.objects.create_user(username=request.POST["username"], password=request.POST["password"])
             try:
                 if user.errors or not user.is_valid:
@@ -140,8 +140,8 @@ def users_register(request):
             # user.clean()
             except (IntegrityError, ValueError, ValidationError):
                 ex = user.errors.as_data()
-                print(ex["__all__"][0].message)
-                return render(request, "feed/users/register.html", {"form": {"errors":ex, "errors_more":ex["__all__"][0].messages, "form":forms.RegisterForm(request.POST)}})
+                print(ex)
+                return render(request, "feed/users/register.html", {"form": {"errors":ex, "error":True, "form":forms.RegisterForm(request.POST)}})
 
             login(request, user_inst)
             return redirect("users_login")
