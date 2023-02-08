@@ -13,14 +13,23 @@ class User(AbstractUser):
         max_length=20,
         unique=True,
         error_messages=None,
-        validators=[RegexValidator("^[a-zA-Z0-9-_.]+$", "Username contains invalid character.")]
+        validators=[RegexValidator("^[a-z0-9-_.]+$", "Lowered username contains invalid character.")]
         #validators=[username_validator] #https://docs.djangoproject.com/en/4.1/ref/forms/validation/
     )
+    username_original = models.CharField(
+        max_length=20,
+        unique=True,
+        validators=[RegexValidator("^[a-zA-Z0-9-_.]+$", "Username contains invalid character.")]
+    )
+
+    def __str__(self):
+        return self.username_original
 
     class Meta:
-        constraints = [  # TODO: https://stackoverflow.com/questions/36330677/django-model-set-default-charfield-in-lowercase ## zachovat velikosti registrace?
-            models.UniqueConstraint(Lower("username"), name="unique_lower_username")
-        ]
+        pass
+        # constraints = [  # TODO: https://stackoverflow.com/questions/36330677/django-model-set-default-charfield-in-lowercase ## zachovat velikosti registrace?
+        #     models.UniqueConstraint(Lower("username"), name="unique_lower_username")
+        # ]
     # def clean(self): #validace jiným způsobem
     #     super().clean()
     #     pattern = re.compile("^[a-zA-Z0-9-_.]+$")
@@ -28,13 +37,15 @@ class User(AbstractUser):
     #         raise ValidationError("Username contains invalid character. Try again.", code="invalid")
 
 class Feed(models.Model):
-    name = models.CharField(max_length=20, validators=[RegexValidator("^[a-zA-Z0-9-_.]+$", "Feeds name contains invalid character.")])
+    name = models.CharField(max_length=20, validators=[RegexValidator("^[a-zA-Z0-9-_.]+$",
+                                                                      "Feeds name contains invalid character.")],
+                            error_messages={"unique_name_owner": "Already exists"})
     date_created = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE) #, default=
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['name', 'owner'], name='unique name and owner bond')
+            models.UniqueConstraint(fields=['name', 'owner'], name='unique_name_owner', violation_error_message="Exists")
         ]
 
 class Data(models.Model):

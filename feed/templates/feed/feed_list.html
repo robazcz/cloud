@@ -4,6 +4,18 @@
 
 {% block body %}
 
+<h3>Create feed:</h3>
+<form method="post" action="{% url "feed_list" %}">
+{% csrf_token %}
+    <table>
+    {{ form.form }}
+{#    <input type="text" name="feed_name">#}
+        {% if form.error %}<tr><td colspan="2" class="error small_err err_cell">{{ form.error }}</td></tr>{% endif %}
+        <tr><td><input type="submit" value="Create"></td></tr>
+    </table>
+</form>
+{% if form.errors %} {{ form.errors }} {% endif %}
+
 <h2>Your feeds</h2>
 
 <table class="feeds">
@@ -21,13 +33,6 @@
     {% endfor %}
 </table>
 
-{% if errors %} <p class="error">Feed s tímto jménem již existuje nebo obsahuje zakázané znaky</p> {% endif %}
 
-<form method="post" action="{% url "feed_list" %}">
-{% csrf_token %}
-    {{ form.as_p }}
-{#    <input type="text" name="feed_name">#}
-    <input type="submit" value="POST">
-</form>
 
 {% endblock %}
