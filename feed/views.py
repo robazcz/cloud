@@ -31,6 +31,15 @@ def feed_list(request):
             new_f.save()
 
         except (IntegrityError, ValueError, ValidationError) as err:
+            if str(err) == "UNIQUE constraint failed: feed_feed.name, feed_feed.owner_id":
+                err = "This name already exists"
+                print(err)
+            else:
+                print(err)
+                err = None
+            
+            print(new_f.errors)
+            print(f"error on name? {new_f.has_error('name')}")
             feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
             return render(request, "feed/feed_list.html", {"user": request.user, "form": {"form":forms.NewFeed(request.POST), "errors": new_f.errors, "error":err}, "feeds": feeds})
 

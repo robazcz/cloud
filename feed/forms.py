@@ -25,6 +25,7 @@ class NewFeed(forms.ModelForm):
         try:
             res = super().save(*args, **kwargs)
         except IntegrityError as err:
+            self.add_error("name", "This name already exists for save")
             raise IntegrityError(err)
 
         return res
