@@ -2,6 +2,7 @@ from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils.timezone import now
 import re
 
 from django.db.models.functions import Lower
@@ -51,4 +52,4 @@ class Feed(models.Model):
 class Data(models.Model):
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
     value = models.DecimalField(max_digits=12, decimal_places=3) #100 000 000,000
-    date_created = models.DateTimeField(auto_now=True)
+    date_created = models.DateTimeField(default=now)

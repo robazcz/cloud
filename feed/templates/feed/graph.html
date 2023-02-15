@@ -1,0 +1,54 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>graf</title>
+</head>
+<body>
+    <div style="width: 800px;"><canvas id="graf"></canvas></div>
+    <script src="{% static 'node_modules/chart.js/dist/chart.umd.js' %}"></script>
+    <script>
+        {#let data = [];#}
+        {#data = {{ data|safe }};#}
+        var lab = [];
+        {#lab.push({"value":1, "date":"d"})#}
+        {% for d in data %} lab.push({ value:{{ d.value }}, date: new Date("{{ d.date.isoformat }}") }); {% endfor %}
+{#        {{ d.date|date:"j. n. Y G:i#}
+        console.log(lab)
+
+
+        new Chart(
+            document.getElementById('graf'),
+            {
+                type: "line",
+                data: {
+                    labels: lab.map(i => i.date),
+                    datasets: [{
+                        data: lab.map(i => i.value)
+                    }]
+                },
+                options: {
+                    interaction: {
+                        intersect: false,
+                        mode: "nearest",
+                        axis: "xy"
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                {#https://www.chartjs.org/docs/latest/samples/scale-options/ticks.html#}
+                                callback: (value, index) => {{ data[index].date|date:"j. n. Y G:i"}}
+                                    {#TODO: přídělat filter na vyhození času z origa nebo js celkově nebo pod timhle https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#}
+                                {#const date = new Date(value);#}
+                                {#return date.toLocaleDateString('cs-CZ', { month: 'short', year: 'numeric' });#}
+{#                                TODO: nebo přidat tohle https://github.com/chartjs/chartjs-adapter-luxon#}
+                            }
+                        }
+                    }
+                }
+            });
+    </script>
+</body>
+</html>
