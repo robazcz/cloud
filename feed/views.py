@@ -192,7 +192,7 @@ def api_data(request, username, feed_name):
                 return Response({'error':f'Feed with name \'{feed_name}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
             if request.method == "POST":
-                serial_data = serializers.DataSerializer(data=request.data)
+                serial_data = serializers.DataSerializer(data=request.data, many=True)
                 ################    serial_data.update({"feed":feed})
                 print(serial_data.initial_data)
                 if serial_data.is_valid():
@@ -239,3 +239,14 @@ def api_feeds(request, username):
     else:
         print("feed does not exist")
         return Response({'error': f'User with name \'{username}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+
+import random
+def graph(request):
+    data = [{"poradi": number, "hodnota": random.randint(0, 50)} for number in range(10)]
+
+    feed = models.Feed.objects.get(name="jamaica", owner__username="admin")
+    datas = models.Data.objects.filter(feed__id=feed.id)
+    print(datas)
+    data = [{"value":i.value , "date":i.date_created} for i in datas]
+    print(data)
+    return render(request, "feed/graph.html", {"data": data})
