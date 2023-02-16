@@ -51,7 +51,7 @@
                     plugins: {
                         tooltip: {
                             callbacks:{
-                                title: function(context) {console.log(context);return new Date(context.label).toLocaleString('cz-CZ')} //TODO: invalid date! new Date(context.dataset.label).toLocaleString('cz-CZ')
+                                title: function(context) {return new Date(context[0].label).toLocaleString('cz-CZ')} //new Date(context.dataset.label).toLocaleString('cz-CZ')
                                 
                             }
                         }
