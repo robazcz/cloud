@@ -60,6 +60,7 @@ def feed_view(request, username, feed_name):
         raise Http404(f"Feed with name {feed_name} does not exist.")
     print(feed.owner)
     data = models.Data.objects.filter(feed__id = feed.id)
+    
 
     return render(request, "feed/feed_view.html", {"user":request.user, "feed": feed, "data": data})
 
@@ -125,6 +126,10 @@ def user_profile(request, username):
     if not match_logged_user(request.user, username):
         return HttpResponseForbidden(render(request, "feed/not_allowed.html"))
         #return HttpResponseForbidden("You are NOT ALLOWED to see this!")
+    user_obj = models.User.objects.get(id=request.user.id)
+    if user_obj.username_original == "":
+        user_obj.username_original = user_obj.username
+        user_obj.save()
 
     return render(request, "feed/users/profile.html", {"user": request.user})
 

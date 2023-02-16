@@ -15,7 +15,7 @@
         var lab = [];
         {#lab.push({"value":1, "date":"d"})#}
         {% for d in data %} lab.push({ value:{{ d.value }}, date: new Date("{{ d.date.isoformat }}") }); {% endfor %}
-{#        {{ d.date|date:"j. n. Y G:i#}
+{#        {{ d.date|date:"j. n. Y G:i }}#}
         console.log(lab)
 
 
@@ -39,11 +39,20 @@
                         x: {
                             ticks: {
                                 {#https://www.chartjs.org/docs/latest/samples/scale-options/ticks.html#}
-                                callback: (value, index) => {{ data[index].date|date:"j. n. Y G:i"}}
+                                callback: function(value, index){ return this.getLabelForValue(value).toLocaleString('cs-CZ', { month: 'short', year: 'numeric' });} //new Date(this.getLabelForValue(value)).toLocaleDateString('cs-CZ', { month: 'short', year: 'numeric' }); 
+                                {#{ data[index].date|date:"j. n. Y G:i"}#}
                                     {#TODO: přídělat filter na vyhození času z origa nebo js celkově nebo pod timhle https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#}
                                 {#const date = new Date(value);#}
                                 {#return date.toLocaleDateString('cs-CZ', { month: 'short', year: 'numeric' });#}
 {#                                TODO: nebo přidat tohle https://github.com/chartjs/chartjs-adapter-luxon#}
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks:{
+                                title: function(context) {console.log(context);return new Date(context.label).toLocaleString('cz-CZ')} //TODO: invalid date! new Date(context.dataset.label).toLocaleString('cz-CZ')
+                                
                             }
                         }
                     }
