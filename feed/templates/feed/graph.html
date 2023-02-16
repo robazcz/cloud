@@ -7,7 +7,7 @@
     <title>graf</title>
 </head>
 <body>
-    <div style="width: 800px;"><canvas id="graf"></canvas></div>
+    <div class="chart-container" style="position: relative; height:60vh; width:80vw"><canvas id="graf"></canvas></div>
     <script src="{% static 'node_modules/chart.js/dist/chart.umd.js' %}"></script>
     <script>
         {#let data = [];#}
@@ -17,6 +17,7 @@
         {% for d in data %} lab.push({ value:{{ d.value }}, date: new Date("{{ d.date.isoformat }}") }); {% endfor %}
 {#        {{ d.date|date:"j. n. Y G:i }}#}
         console.log(lab)
+        var xtime = tobj => { return `${tobj.getHours()}:${tobj.getMinutes()}` }
 
 
         new Chart(
@@ -39,12 +40,9 @@
                         x: {
                             ticks: {
                                 {#https://www.chartjs.org/docs/latest/samples/scale-options/ticks.html#}
-                                callback: function(value, index){ return this.getLabelForValue(value).toLocaleString('cs-CZ', { month: 'short', year: 'numeric' });} //new Date(this.getLabelForValue(value)).toLocaleDateString('cs-CZ', { month: 'short', year: 'numeric' }); 
-                                {#{ data[index].date|date:"j. n. Y G:i"}#}
-                                    {#TODO: přídělat filter na vyhození času z origa nebo js celkově nebo pod timhle https://docs.djangoproject.com/en/4.1/howto/custom-template-tags/#}
-                                {#const date = new Date(value);#}
-                                {#return date.toLocaleDateString('cs-CZ', { month: 'short', year: 'numeric' });#}
-{#                                TODO: nebo přidat tohle https://github.com/chartjs/chartjs-adapter-luxon#}
+                                callback: function(value, index){ return xtime(new Date(this.getLabelForValue(value)));} //new Date(this.getLabelForValue(value)).toLocaleDateString('cs-CZ', { month: 'short', year: 'numeric' }); 
+
+                            {# TODO: nebo přidat tohle https://github.com/chartjs/chartjs-adapter-luxon#}
                             }
                         }
                     },
