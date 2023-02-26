@@ -64,19 +64,51 @@ def feed_view(request, username, feed_name):
 
     return render(request, "feed/feed_view.html", {"user":request.user, "feed": feed, "data": data})
 
+@login_required
 def new_data(request, username, feed_name):
     try:
-        feed = models.Feed.objects.get(name=feed_name, owner__username=username.lower())
+        if match_logged_user(request.user, username):
+            feed = models.Feed.objects.get(name=feed_name, owner__username=username.lower())
+        else:
+            raise models.Feed.DoesNotExist
     except models.Feed.DoesNotExist:
         raise Http404(f"Feed with name {feed_name} does not exist.")
 
-    new_d = models.Data(feed=feed, value=request.POST["data_value"])
-    new_d.save()
-
-    data = models.Data.objects.filter(feed__id = feed.id)
+    if request.method == "POST":
+        new_d = models.Data(feed=feed, value=request.POST["data_value"])
+        try:
+            new_d.full_clean()
+            new_d.save()
+        except ValidationError:
+            return HttpResponse("Value is not valid!")
 
     return redirect("feed_view", username, feed_name)
+
+
+    #data = models.Data.objects.filter(feed__id = feed.id)
+
     #return render(request, "feed/feed_view.html", {"feed": feed, "data": data})
+
+@login_required
+@csrf_exempt
+def data_view(request, username, feed_name, pk):
+    try:
+        if match_logged_user(request.user, username):
+            feed = models.Feed.objects.get(name=feed_name, owner__username=username.lower())
+        else:
+            raise models.Feed.DoesNotExist
+    except models.Feed.DoesNotExist:
+        raise Http404(f"Feed with name {feed_name} does not exist.")
+
+    if request.method == "DELETE":
+        try:
+            data = models.Data.objects.get(id=pk, feed=feed)
+        except models.Data.DoesNotExist:
+            return HttpResponse("Data does not exist", status=status.HTTP_404_NOT_FOUND)
+
+        data.delete()
+        print("deleted")
+        return HttpResponse("", status=status.HTTP_200_OK)
 
 def users_login(request):
     # print(request.GET)
@@ -105,7 +137,7 @@ def users_login(request):
             login(request, user)
             return redirect(redirect_to, args)
         else:
-            return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": True, "form": forms.LoginForm(request.POST)}, "user":request.user})
+            return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": True, "form": forms.LoginForm(request.POST, label_suffix="")}, "user":request.user})
 
     else:
         print(redirect_to)
@@ -114,7 +146,7 @@ def users_login(request):
         if request.user.is_authenticated:
             return redirect("user_profile", request.user.username) if not redirect_to else redirect(redirect_to)
         else:
-            return render(request, "feed/users/login.html", {"next": redirect_to, "form": {"errors": False, "form":forms.LoginForm}, "user": request.user})
+            return render(request, "feed/users/login.html", {"next": redirect_to, "form": {"errors": False, "form":forms.LoginForm(label_suffix="")}, "user": request.user})
 
     #return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": False}, "user": request.user})
 
@@ -153,15 +185,17 @@ def users_register(request):
             user = forms.RegisterForm(request.POST, instance=user_i)  #TODO: ke každý práci s username - lower username, přidat original username field
             #user_inst = models.User.objects.create_user(username=request.POST["username"], password=request.POST["password"])
             try:
+                # print(f"valid? {user.is_valid()}: {user.errors.as_json()}")
                 if user.errors or not user.is_valid:
-                    #print(f"valid? {user.errors.as_json()}")
                     raise ValidationError("Error validating form")
                 user_inst = user.save()
-            # user.clean()
-            except (IntegrityError, ValueError, ValidationError):
+
+            except (IntegrityError, ValueError, ValidationError) as err:
+                if str(err) == "Username exists":
+                    user.add_error("username_original", "User with this username already exists.")
                 ex = user.errors.as_data()
                 print(ex)
-                return render(request, "feed/users/register.html", {"form": {"errors":ex, "error":True, "form":forms.RegisterForm(request.POST)}})
+                return render(request, "feed/users/register.html", {"form": {"errors":ex, "error":True, "form":user}}) #forms.RegisterForm(request.POST)
 
             login(request, user_inst)
             return redirect("users_login")
@@ -194,12 +228,12 @@ def api_users(request):
             serializer.save()
             return Response("valid" if serializer.is_valid() else "invalid", status=status.HTTP_201_CREATED)
 
-@api_view(["GET", "POST"])
+@api_view(["GET", "POST", "DELETE"])
 @permission_classes([permissions.IsAuthenticated])
 def api_data(request, username, feed_name):
         if match_logged_user(request.user, username):
             try:
-                feed = models.Feed.objects.get(name=feed_name, owner__username=username)
+                feed = models.Feed.objects.get(name=feed_name, owner__username=username.lower())
                 #print(feed)
             except models.Feed.DoesNotExist:
                 print("feed does not exist")
@@ -210,12 +244,22 @@ def api_data(request, username, feed_name):
 
                 ################    serial_data.update({"feed":feed})
                 print(serial_data.initial_data)
+
+                for data in serial_data.initial_data:
+                    if isinstance(data["value"], str):
+                        try:
+                            data["value"] = float(data["value"])
+                        except ValueError:
+                            return Response({'error':'Data is not valid. (string, not int/float)'}, status=status.HTTP_400_BAD_REQUEST)
                 if serial_data.is_valid():
                     serial_data.save(feed=feed)
                     return Response({'status':'Successfully created.'}, status=status.HTTP_201_CREATED)
                 
                 else:
                     return Response({'error':'Data is not valid.'}, status=status.HTTP_400_BAD_REQUEST)            
+
+            elif request.method == "DELETE":
+                pass #TODO
 
             else:
                 feeds_data = models.Data.objects.filter(feed__id=feed.id)
@@ -241,7 +285,7 @@ def api_feeds(request, username):
             serialized_feed = serializers.FeedSerializer(data=request.data)
             print(serialized_feed.initial_data)
             if serialized_feed.is_valid():
-                user = models.User.objects.get(username=username)
+                user = models.User.objects.get(username=username.lower())
                 serialized_feed.save(owner=user)
                 return Response({'status':f'Feed \'{serialized_feed.data.get("name")}\' successfully created.'}, status=status.HTTP_201_CREATED)
             else:
@@ -255,13 +299,3 @@ def api_feeds(request, username):
         print("feed does not exist")
         return Response({'error': f'User with name \'{username}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
-import random
-def graph(request):
-    data = [{"poradi": number, "hodnota": random.randint(0, 50)} for number in range(10)]
-
-    feed = models.Feed.objects.get(name="jamaica", owner__username="admin")
-    datas = models.Data.objects.filter(feed__id=feed.id)
-    print(datas)
-    data = [{"value":i.value , "date":i.date_created} for i in datas]
-    print(data)
-    return render(request, "feed/graph.html", {"data": data})

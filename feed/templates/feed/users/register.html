@@ -1,12 +1,18 @@
 {% extends "feed/base.html" %}
+{% load static %}
+
+{% block head %}
+<link href='{% static "node_modules/css.gg/icons/css/lock.css" %}' rel='stylesheet'>
+<link href='{% static "node_modules/css.gg/icons/css/user.css" %}' rel='stylesheet'>
+{% endblock %}
 
 {% block body %}
 
-<h2>REGISTRATION</h2>
 
 
-<form method="post" action="{% url 'users_register' %}">
+<form method="post" action="{% url 'users_register' %}" class="login-form">
     {% csrf_token %}
+    <h3>REGISTRATION</h3>
     <table class="user">
     {{ form.form }}
 {#      <tr>#}
@@ -22,9 +28,9 @@
 {#        <tr><td colspan=2 class="error small_err">{{ err.messages.0 }}</td></tr>#}
 {#    {% endfor %}{% endfor %} {% endif %}#}
 
-        {% if form.error %} 
-        <tr><td colspan=2 class="error small_err"> Error </td> </tr>
-        {% endif %}
+{#        {% if form.error %} #}
+{#        <tr><td colspan=2 class="error small_err"> Error </td> </tr>#}
+{#        {% endif %}#}
     </table>
 
       <input type="submit" value="register">

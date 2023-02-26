@@ -1,12 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap');
+/*@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300&display=swap');*/
+/*@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap');*/
 
 :root{
   --bg: #181a1b;
   --fg: #393e46;
-  --hl: #f96d00;
+  --hl: #e7e571; /*#f96d00;*/
   --tx: #d7d7d7;
 }
+
+/* orbitron-900 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Orbitron';
+  font-style: normal;
+  font-weight: 900;
+  src: url('/static/feed/fonts/orbitron-v25-latin-900.woff2') format('woff2'), /* Chrome 36+, Opera 23+, Firefox 39+ */
+       url('/static/feed/fonts/orbitron-v25-latin-900.woff') format('woff'); /* Chrome 5+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
+/* rubik-300 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Rubik';
+  font-style: normal;
+  font-weight: 300;
+  src: url('/static/feed/fonts/rubik-v23-latin-300.woff2') format('woff2'), /* Chrome 36+, Opera 23+, Firefox 39+ */
+       url('/static/feed/fonts/rubik-v23-latin-300.woff') format('woff'); /* Chrome 5+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
+/* rubik-regular - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Rubik';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/static/feed/fonts/rubik-v23-latin-regular.woff2') format('woff2'), /* Chrome 36+, Opera 23+, Firefox 39+ */
+       url('/static/feed/fonts/rubik-v23-latin-regular.woff') format('woff'); /* Chrome 5+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
 
 body{
   font-family: 'Rubik', sans-serif;
@@ -67,33 +98,39 @@ header li a:hover, header li a.enabled{
 
 }
 
-/*.feeds, .feeds td, .feeds th{*/
+/*.feeds-table, .feeds-table td, .feeds-table th{*/
 /*  border: 1px solid gray;*/
 /*}*/
 
-.feeds{
-  width: 50%;
-  border-collapse: collapse;
-  background-color: #292d33;
-  min-width: 33em;
+.table-container{
+  overflow-x: auto;
+
 }
 
-.feeds tr:nth-child(even){
+.feeds-table{
+  border-collapse: collapse;
+  border-spacing: 0;
+  background-color: #292d33;
+  /*width: 50%;*/
+  min-width: 15em;
+}
+
+.feeds-table tr:nth-child(even){
   background-color: #151a1e;
 }
 
-.feeds th{
+.feeds-table th{
   height: 2em;
   background-color: black;
   border-bottom: 1px solid var(--tx);
 }
 
-.feeds th, .feeds td{
+.feeds-table th, .feeds-table td{
   padding: 0.75em;
   text-align: left;
 }
 
-.feeds a{
+.feeds-table a{
   color: #e7e571;
   padding: 0.5em 1em 0.5em 1em;
   text-decoration: none;
@@ -101,7 +138,7 @@ header li a:hover, header li a.enabled{
   /*border-radius: 1em;*/
 }
 
-.feeds a:hover{
+.feeds-table a:hover{
   text-decoration: underline;
 }
 
@@ -117,9 +154,176 @@ header li a:hover, header li a.enabled{
 }
 
 .err_input_cell input{
-  border: 2px solid red;
+  border-color: red !important;
 }
 
 .user th{
   text-align: right;
+}
+
+.tooltip {
+  position: relative;
+  /*display: inline-block;*/
+  /*border-bottom: 1px dotted black;*/
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  position: absolute;
+  text-align: center;
+  font-size: 0.75em;
+  width: 100%;
+  background-color: black;
+  color: #fff;
+  border-radius: 6px;
+  padding: 5px;
+  z-index: 1;
+  top: 5px;
+  left: 0%;
+}
+
+/*.tooltip .tooltiptext::after {*/
+/*  content: " ";*/
+/*  position: absolute;*/
+/*  top: 50%;*/
+/*  right: 100%; !* To the left of the tooltip *!*/
+/*  margin-top: -5px;*/
+/*  border-width: 5px;*/
+/*  border-style: solid;*/
+/*  border-color: transparent black transparent transparent;*/
+/*}*/
+
+.tooltip:hover .tooltiptext, .tooltip:active .tooltiptext{
+  visibility: visible;
+}
+
+.icon{
+  display: inline-block !important;
+  /*height: 19px !important;*/
+  cursor: pointer;
+}
+
+.svg-cont svg{
+  color: white;
+  height: 24px;
+  width: 24px;
+}
+
+.svg-cont svg:hover{
+  cursor: pointer;
+}
+
+.gg-close{
+  color: red;
+}
+
+.gg-check{
+  color: green;
+}
+
+.svg-cont{
+  padding: 0 !important;
+  text-align: center !important;
+  position: relative;
+}
+
+.options{
+  position: absolute;
+  text-align: center;
+  width: 80%;
+  background-color: var(--fg);
+  border-radius: 7px;
+  padding: 0px;
+  z-index: 1;
+  top: 9px;
+  left: 11%;
+}
+
+.hyper-button{
+  padding: 0.75em 1em;
+  background-color: var(--fg);
+  color: var(--tx);
+  text-decoration: none;
+  border-radius: 15px;
+}
+
+.login-form{
+  width: 340px;
+  margin: 60px auto 30px;
+  padding: 1.5em;
+  position: relative;
+  background: var(--fg);
+  border-radius: 4px;
+  color: var(--tx);
+}
+
+.login-form h3{
+  font-weight: bold;
+  padding: 0;
+  margin: 0 0 0.5em 0;
+  border-bottom: 2px solid var(--tx);
+}
+
+.login-form table{
+  width: 100%;
+  margin-left: 0.3em;
+}
+
+.login-form label{
+  font-size: 0.9em;
+}
+
+.login-form input[type=text], .login-form input[type=password]{
+  padding: 0.5em;
+  border-radius: 5px;
+  width: 90%;
+  background-color: var(--fg);
+  border: solid 1px #d7d7d77d;
+  color: white;
+}
+
+.login-form input[type=text]::placeholder, .login-form input[type=password]::placeholder{
+  color: white;
+}
+
+.login-form input[type=text]:focus, .login-form input[type=password]:focus{
+  outline: 0;
+  box-shadow: 0 0 0.5em white;
+}
+
+.login-form input[type=submit]{
+  padding: 0.5em;
+  width: 96%;
+  margin: 6px;
+  border-radius: 8px;
+  border: solid 1px;
+  background-color: var(--fg);
+  color: var(--tx);
+  cursor: pointer;
+}
+
+.login-form input[type=submit]:active{
+  box-shadow: 0 0 0.5em white;
+}
+
+.login-form input[type=submit]:hover{
+  background-color: #2b2f35;
+}
+
+.login-form th{
+  border: solid 1px #d7d7d77d;
+  border-right: none;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  width: 10%;
+}
+
+.gg-user, .gg-lock{
+  position: relative;
+  left: 35%;
+}
+
+.login-form a{
+  text-decoration: none;
+  color: var(--hl);
 }

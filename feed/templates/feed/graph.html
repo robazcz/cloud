@@ -14,7 +14,7 @@
         {#data = {{ data|safe }};#}
         var lab = [];
         {#lab.push({"value":1, "date":"d"})#}
-        {% for d in data %} lab.push({ value:{{ d.value }}, date: new Date("{{ d.date.isoformat }}") }); {% endfor %}
+        {% for d in data %} lab.push({ value:{{ d.value }}, date: new Date("{{ d.date_created.isoformat }}") }); {% endfor %}
 {#        {{ d.date|date:"j. n. Y G:i }}#}
         console.log(lab)
         var xtime = tobj => { return `${tobj.getHours()}:${tobj.getMinutes()}` }

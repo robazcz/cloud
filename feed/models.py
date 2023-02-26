@@ -20,7 +20,8 @@ class User(AbstractUser):
     username_original = models.CharField(
         max_length=20,
         unique=True,
-        validators=[RegexValidator("^[a-zA-Z0-9-_.]+$", "Username contains invalid character.")]
+        validators=[RegexValidator("^[a-zA-Z0-9-_.]+$", "Username contains invalid character.")],
+        error_messages={"unique":"User with this username already exists."}
     )
 
     def __str__(self):
@@ -53,3 +54,8 @@ class Data(models.Model):
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
     value = models.DecimalField(max_digits=12, decimal_places=3) #100 000 000,000
     date_created = models.DateTimeField(default=now)
+
+    # def save(self, *args, **kwargs):
+    #     if self.value == "NaN":
+    #         raise ValidationError("NaN")
+    #     super().save(self, *args, **kwargs)

@@ -1,0 +1,17 @@
+API
+- DELETE dat?
+- autorizace přes token
+
+GRAF
+- tečky a celá spojnice
+
+DATA VIEW
+- využít ho k otevření dat?
+
+FEED VIEW
+- časový rozpětí
+- řazení dat
+- mazání všech dat v rozpětí?
+
+LOGIN
+- zapomenutý heslo?

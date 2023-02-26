@@ -9,6 +9,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-      "chart.js": "^4.0.0"
+      "chart.js": "^4.0.0",
+      "css.gg": "2.0.0"
     }
   }

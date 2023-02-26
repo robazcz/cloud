@@ -1,40 +1,115 @@
-{% load static %}
 {% extends "feed/base.html" %}
+{% load static %}
+
+{% block title %}FEED {{ feed.name }}{% endblock %}
+{% block head %}
+    <link href='{% static "node_modules/css.gg/icons/css/backspace.css" %}' rel='stylesheet'>
+    <link href='{% static "node_modules/css.gg/icons/css/close.css" %}' rel='stylesheet'>
+    <link href='{% static "node_modules/css.gg/icons/css/check.css" %}' rel='stylesheet'>
+{% endblock %}
 
 {% block body %}
 <h3>{{ feed.name }}</h3>
-<div class="chart-container" style="position: relative; height:60vh; width:80vw"><canvas id="graf"></canvas></div>
+<div class="chart-container" style="position: relative; height:45vh; width:90vw"><canvas id="graf"></canvas></div>
 <form method="post" action="{% url "new_data" feed.owner feed.name %}">
 {% csrf_token %}
     <input type="text" name="data_value">
     <input type="submit" value="POST">
 </form>
 
-<table class="feeds">
+{#<form method="POST" action="">#}
+    {#</form>#}
+{#<label for="see_selection">Date format</label>#}
+{#<select name="see_selection" id="see_selection">#}
+{#    <option value="see_time" selected="selected">Time</option>#}
+{#    <option value="see_date">Date</option>#}
+{#    <option value="see_datetime">Date and time</option>#}
+{#</select>#}
+
+<table class="feeds-table">
     <tr>
-        <th>ID</th>
-        <th>value</th>
+{#        <th>ID</th>#}
         <th>created</th>
+        <th>value</th>
+        <th>options</th>
     </tr>
     {% for dat in data %}
-        <tr>
-        <td>{{ dat.id }}</td>
+        <tr id="row-{{ dat.id }}">
+{#        <td>{{ dat.id }}</td>#}
+        <td class="tooltip see_time">{{ dat.date_created|date:"G:i" }}<span class="tooltiptext">{{ dat.date_created|date:"j. n. Y G:i" }}</span></td>
+{#        <td class="tooltip see_date" style="display:none">{{ dat.date_created|date:"j. n. Y" }}<span class="tooltiptext">{{ dat.date_created|date:"j. n. Y G:i" }}</span></td>#}
+{#        <td class="tooltip see_datetime" style="display:none">{{ dat.date_created|date:"j. n. Y G:i" }}<span class="tooltiptext">{{ dat.date_created|date:"j. n. Y G:i" }}</span></td>#}
         <td>{{ dat.value }}</td>
-        <td>{{ dat.date_created }}</td>
+        <td class="svg-cont">
+            <div id="options-{{ dat.id }}"><i class="icon gg-backspace" onclick="options({{ dat.id }})"></i></div>
+            <div id="delete-{{ dat.id }}" class="options" style="display:none">
+                <i class="icon gg-check" onclick="delete_data({{ dat.id }})"></i>
+                <i class="icon gg-close" onclick="deny_delete_data({{ dat.id }})"></i>
+            </div>
+        </td>
+{#        <td class="svg-cont"><svg onclick="delete_data({{ dat.id }})"><use xlink:href="{% static "node_modules/css.gg/icons/all.svg" %}#gg-close"></use></svg></td>#}
+
+
     </tr>
     {% endfor %}
 </table>
 
 <script src="{% static 'node_modules/chart.js/dist/chart.umd.js' %}"></script>
 <script>
+    function options(data_key){
+        document.getElementById(`delete-${data_key}`).style.display = 'inline-block';
+        document.getElementById(`options-${data_key}`).style.display = 'none';
+    }
+
+    function deny_delete_data(data_key){
+        document.getElementById(`delete-${data_key}`).style.display = 'none';
+        document.getElementById(`options-${data_key}`).style.display = 'inline-block';
+    }
+
+    function delete_data(data_key){
+        fetch(window.location.href + data_key, {method: "delete"}).then(res => {
+            if(res.ok){
+                document.getElementById(`row-${data_key}`).style.display = 'none';
+            }
+        });
+    }
+
+    {#function set_display(items, val){#}
+    {#    for(let item of items){#}
+    {#        item.style.display = val#}
+    {#    }#}
+    {# }#}
+    {##}
+    {#let see_select = document.getElementById("see_selection");#}
+    {#see_select.addEventListener("change", () => {#}
+    {#    switch(see_select.value){#}
+    {#        case "see_time":#}
+    {#            set_display(document.getElementsByClassName("see_time"), "block");#}
+    {#            set_display(document.getElementsByClassName("see_date"), "none");#}
+    {#            set_display(document.getElementsByClassName("see_datetime"), "none");#}
+    {#            break;#}
+    {#        case "see_date":#}
+    {#            set_display(document.getElementsByClassName("see_date"), "block");#}
+    {#            set_display(document.getElementsByClassName("see_time"), "none");#}
+    {#            set_display(document.getElementsByClassName("see_datetime"), "none");#}
+    {#            break;#}
+    {#        case "see_datetime":#}
+    {#            set_display(document.getElementsByClassName("see_datetime"), "block");#}
+    {#            set_display(document.getElementsByClassName("see_time"), "none");#}
+    {#            set_display(document.getElementsByClassName("see_date"), "none");#}
+    {#            break;#}
+    {#    }#}
+    {# });#}
+
+
     {#let data = [];#}
     {#data = {{ data|safe }};#}
     var lab = [];
     {#lab.push({"value":1, "date":"d"})#}
-    {% for d in data %} lab.push({ value:{{ d.value }}, date: new Date("{{ d.date.isoformat }}") }); {% endfor %}
+    {% for d in data %} lab.push({ value:{{ d.value }}, date: new Date("{{ d.date_created.isoformat }}") }); {% endfor %}
 {#        {{ d.date|date:"j. n. Y G:i }}#}
     console.log(lab)
-    var xtime = tobj => { return `${tobj.getHours()}:${tobj.getMinutes()}` }
+    var xtime = tobj => { return `${tobj.getHours()}:${tobj.getMinutes().toString().length === 1 ? "0"+tobj.getMinutes() : tobj.getMinutes()}` }
 
 
     new Chart(
@@ -44,10 +119,12 @@
             data: {
                 labels: lab.map(i => i.date),
                 datasets: [{
+                    label: "{{ feed.name }}",
                     data: lab.map(i => i.value)
                 }]
             },
             options: {
+                maintainAspectRatio: false,
                 interaction: {
                     intersect: false,
                     mode: "nearest",

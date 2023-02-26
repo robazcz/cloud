@@ -1,14 +1,24 @@
 
 {% for field in form %}
+
+<tr>
+{% if field.label == "Username" %}
+    <th><i class="gg-user"></i></th>
+{% elif field.label == "Password" %}
+    <th {% if field.name == "password1" %}rowspan="2"{% endif %}><i class="gg-lock" style="transform: scale(0.9); top: 0.1em"></i></th>
+{% elif field.label == "Confirm_password" %}
+
+{% else %}
+    <th>{% if field.label %}{{ field.label_tag }}{% endif %}</th>
+{% endif %}
+    <td class="{% if field.errors %}err_input_cell{% endif %}">{{ field }}</td>
+</tr>
+
 {% if field.errors %}
 <tr>
-    <th></th>
+    <td></td>
     <td class="error small_err err_cell">{{ field.errors }}</td>
 </tr>
 {% endif %}
 
-<tr>
-    <th>{% if field.label %}{{ field.label_tag }}{% endif %}</th>
-    <td class="{% if field.errors %}err_input_cell{% endif %}">{{ field }}</td>
-</tr>
 {% endfor %}

@@ -17,7 +17,7 @@ urlpatterns = [
     path("feed/", views.feed_list, name="feed_list"),
     path("feed/<str:username>/<str:feed_name>/", views.feed_view, name="feed_view"),
     path("feed/<str:username>/<str:feed_name>/new_data/", views.new_data, name="new_data"),
-    path("graf", views.graph)
+    path("feed/<str:username>/<str:feed_name>/<int:pk>", views.data_view, name="data_view")
 ]
 
 urlpatterns += [
