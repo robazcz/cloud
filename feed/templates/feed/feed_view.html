@@ -11,6 +11,33 @@
 {% block body %}
 <h3>{{ feed.name }}</h3>
 <div class="chart-container" style="position: relative; height:45vh; width:90vw"><canvas id="graf"></canvas></div>
+<form method="post" action="{% url "feed_view" feed.owner feed.name %}">
+    <label class="cap-cont">
+        Cap data by:
+        <select name="select_cap">
+            <option value="number" selected>number of records</option>
+            <option value="date">from date to date</option>
+        </select>
+    </label>
+
+    <label class="size-cont">
+        size:
+        <select name="select_size">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+        </select>
+    </label>
+{#TODO: dd pls dodělat#}
+    <label class="date-pick-cont">
+        Pick a date range:
+        <input type="datetime-local" name="from_date" id="from_date" class="date-picker" value="{{ data.first.date_created|date:"Y-m-d H:i" }}"> -
+        <input type="datetime-local" name="to_date" id="to_date" class="date-picker" value="{{ data.last.date_created|date:"Y-m-d H:i" }}">
+    </label>
+</form>
 <form method="post" action="{% url "new_data" feed.owner feed.name %}">
 {% csrf_token %}
     <input type="text" name="data_value">

@@ -55,11 +55,14 @@ def feed_list(request):
 @login_required
 def feed_view(request, username, feed_name):
     try:
-        feed = models.Feed.objects.get(name=feed_name, owner__username=username.lower())
+        if match_logged_user(request.user, username):
+            feed = models.Feed.objects.get(name=feed_name, owner__username=username.lower())
+        else:
+            raise models.Feed.DoesNotExist
     except models.Feed.DoesNotExist:
         raise Http404(f"Feed with name {feed_name} does not exist.")
     print(feed.owner)
-    data = models.Data.objects.filter(feed__id = feed.id)
+    data = models.Data.objects.filter(feed__id = feed.id).order_by("-date_created")
     
 
     return render(request, "feed/feed_view.html", {"user":request.user, "feed": feed, "data": data})
