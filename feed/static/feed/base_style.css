@@ -64,7 +64,7 @@ header ul {
 
 header li {
   float: left;
-  #display: inline-block;
+  /*display: inline-block;*/
 }
 
 header li a {
@@ -326,4 +326,8 @@ header li a:hover, header li a.enabled{
 .login-form a{
   text-decoration: none;
   color: var(--hl);
+}
+
+.size-cont, .date-pick-cont{
+  display: none;
 }

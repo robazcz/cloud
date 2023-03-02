@@ -62,7 +62,9 @@ def feed_view(request, username, feed_name):
     except models.Feed.DoesNotExist:
         raise Http404(f"Feed with name {feed_name} does not exist.")
     print(feed.owner)
-    data = models.Data.objects.filter(feed__id = feed.id).order_by("-date_created")
+    print(request.POST)
+    if request.POST["select_cap"] == "date":
+        data = models.Data.objects.filter(feed__id = feed.id).order_by("-date_created")
     
 
     return render(request, "feed/feed_view.html", {"user":request.user, "feed": feed, "data": data})
