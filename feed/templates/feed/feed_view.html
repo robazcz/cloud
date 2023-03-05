@@ -15,28 +15,28 @@
 <form method="post" action="{% url "feed_view" feed.owner feed.name %}">
     {% csrf_token %}
     <label class="cap-cont">
-        Cap data by:
+        Limit data by:
         <select name="select_cap" onchange="ch_method()" id="select_cap">
-            <option value="number" selected>number of records</option>
-            <option value="date">from date to date</option>
+            <option value="number" {% if options.select_cap == "number" or options.select_cap == none%}selected{% endif %}>number of records</option>
+            <option value="date" {% if options.select_cap == "date"%}selected{% endif %}>from date to date</option>
         </select>
     </label>
-
-    <label class="size-cont" id="size_cont">
+options: {{ options }}
+    <label class="size-cont" id="size_cont" onchange="this.form.submit()">
         <select name="select_size">
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-            <option value="200">200</option>
+            <option value="5" {% if options.select_size == "5" %}selected{% endif %}>5</option>
+            <option value="10" {% if options.select_size == "10" %}selected{% endif %}>10</option>
+            <option value="20" {% if options.select_size == "20" or options.select_size == none%}selected{% endif %}>20</option>
+            <option value="50" {% if options.select_size == "50" %}selected{% endif %}>50</option>
+            <option value="100" {% if options.select_size == "100" %}selected{% endif %}>100</option>
+            <option value="200" {% if options.select_size == "200" %}selected{% endif %}>200</option>
         </select>
     </label>
 {#TODO: dd pls dodělat#}
 
     <label class="date-pick-cont" id="date_pick_cont">
-        <input type="datetime-local" name="from_date" id="from_date" class="date-picker" value="{{ data.first.date_created|date:"Y-m-d H:i" }}"> -
-        <input type="datetime-local" name="to_date" id="to_date" class="date-picker" value="{{ data.last.date_created|date:"Y-m-d H:i" }}">
+        <input type="datetime-local" name="from_date" id="from_date" class="date-picker" value="{{ data.19.date_created|date:"Y-m-d H:i" }}"> -
+        <input type="datetime-local" name="to_date" id="to_date" class="date-picker" value="{{ data.first.date_created|date:"Y-m-d H:i" }}">
         <input type="submit" value="post">
     </label>
 </form>
@@ -100,9 +100,9 @@
         }
     }
 
-    document.body.onload = () => {
-        ch_method();
-    }
+    {#document.body.onload = () => {#}
+    {#    ch_method();#}
+    {# }#}
 
     function options(data_key){
         document.getElementById(`delete-${data_key}`).style.display = 'inline-block';
@@ -122,43 +122,23 @@
         });
     }
 
-    {#function set_display(items, val){#}
-    {#    for(let item of items){#}
-    {#        item.style.display = val#}
-    {#    }#}
-    {# }#}
-    {##}
-    {#let see_select = document.getElementById("see_selection");#}
-    {#see_select.addEventListener("change", () => {#}
-    {#    switch(see_select.value){#}
-    {#        case "see_time":#}
-    {#            set_display(document.getElementsByClassName("see_time"), "block");#}
-    {#            set_display(document.getElementsByClassName("see_date"), "none");#}
-    {#            set_display(document.getElementsByClassName("see_datetime"), "none");#}
-    {#            break;#}
-    {#        case "see_date":#}
-    {#            set_display(document.getElementsByClassName("see_date"), "block");#}
-    {#            set_display(document.getElementsByClassName("see_time"), "none");#}
-    {#            set_display(document.getElementsByClassName("see_datetime"), "none");#}
-    {#            break;#}
-    {#        case "see_datetime":#}
-    {#            set_display(document.getElementsByClassName("see_datetime"), "block");#}
-    {#            set_display(document.getElementsByClassName("see_time"), "none");#}
-    {#            set_display(document.getElementsByClassName("see_date"), "none");#}
-    {#            break;#}
-    {#    }#}
-    {# });#}
-
+    ch_method();
 
     {#let data = [];#}
     {#data = {{ data|safe }};#}
     var lab = [];
     {#lab.push({"value":1, "date":"d"})#}
     {% for d in data %} lab.push({ value:{{ d.value }}, date: new Date("{{ d.date_created.isoformat }}") }); {% endfor %}
-{#        {{ d.date|date:"j. n. Y G:i }}#}
-    console.log(lab)
-    var xtime = tobj => { return `${tobj.getHours()}:${tobj.getMinutes().toString().length === 1 ? "0"+tobj.getMinutes() : tobj.getMinutes()}` }
+    console.log(lab);
+    lab=lab.reverse();
+    console.log(lab);
 
+    {#        {{ d.date|date:"j. n. Y G:i }}#}
+    // dát datum do from_date
+    {#document.getElementById("from_date").value = `${lab[0].date.toISOString().slice(0, 10)} ${lab[0].date.toISOString().slice(11, 16)}`;#}
+    document.getElementById("from_date").value = new Date(lab[0].date.getTime() - lab[0].date.getTimezoneOffset() * 60000).toISOString().slice(0, -8);
+
+    var xtime = tobj => { return `${tobj.getHours()}:${tobj.getMinutes().toString().length === 1 ? "0"+tobj.getMinutes() : tobj.getMinutes()}` }
 
     new Chart(
         document.getElementById('graf'),
@@ -176,7 +156,7 @@
                 interaction: {
                     intersect: false,
                     mode: "nearest",
-                    axis: "xy"
+                    axis: "x"
                 },
                 scales: {
                     x: {

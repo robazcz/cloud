@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, HttpResponseForbidden, JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.utils.datastructures import MultiValueDictKeyError
+from django.utils import dateparse
 
 from rest_framework import viewsets, permissions
 from . import serializers
@@ -62,12 +62,27 @@ def feed_view(request, username, feed_name):
     except models.Feed.DoesNotExist:
         raise Http404(f"Feed with name {feed_name} does not exist.")
     print(feed.owner)
-    print(request.POST)
-    if request.POST["select_cap"] == "date":
-        data = models.Data.objects.filter(feed__id = feed.id).order_by("-date_created")
-    
+    options = {}
+    if request.method == "POST":
+        print(request.POST)
+        options["select_cap"] = request.POST["select_cap"]
+        if request.POST["select_cap"] == "number":
+            options["select_size"] = request.POST["select_size"]
+            data = models.Data.objects.filter(feed__id = feed.id).order_by("-date_created")[:int(request.POST["select_size"])]
 
-    return render(request, "feed/feed_view.html", {"user":request.user, "feed": feed, "data": data})
+        elif request.POST["select_cap"] == "date":
+            options["from_date"] = request.POST["from_date"]
+            options["to_date"] = request.POST["to_date"]
+            data = models.Data.objects.filter(feed__id = feed.id)\
+                                      .filter(date_created__range =
+                                             (dateparse.parse_datetime(request.POST["from_date"]),
+                                              dateparse.parse_datetime(request.POST["to_date"]))).order_by("-date_created")
+
+    else:
+        data = models.Data.objects.filter(feed__id=feed.id).order_by("-date_created")[:20]
+
+    print(options)
+    return render(request, "feed/feed_view.html", {"user":request.user, "feed": feed, "data": data, "options":options})
 
 @login_required
 def new_data(request, username, feed_name):

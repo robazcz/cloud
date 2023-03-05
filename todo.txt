@@ -10,6 +10,8 @@ DATA VIEW
 
 FEED VIEW
 - časový rozpětí
+- rozpětí podle počtu
+.. při přepnutí option ve výběru ekšly změna mezi datem a počtem
 - řazení dat
 - mazání všech dat v rozpětí?
 
