@@ -4,34 +4,40 @@
 
 {% block body %}
 
-<h3>Create feed:</h3>
-<form method="post" action="{% url "feed_list" %}">
-{% csrf_token %}
-    <table>
-    {{ form.form }}
-{#    <input type="text" name="feed_name">#}
-        {% if form.error %}<tr><td colspan="2" class="error small_err err_cell">{{ form.error }}</td></tr>{% endif %}
-        <tr><td><input type="submit" value="Create"></td></tr>
-    </table>
-</form>
+    <div class="feed-cont">
+        <form method="post" action="{% url "feed_list_user" user.username %}" class="input-form">
+            {% csrf_token %}
+            <table class="options-table">
+                <tr>
+                    <td colspan="2">Create feed</td>
+                </tr>
+                {{ form }}
+                <tr>
+                    <td colspan="2"><input type="submit" value="Create" class="input-submit"></td>
+                </tr>
+            </table>
+        </form>
 
-<h2>Your feeds</h2>
+        <div>
+            <h2>Your feeds</h2>
 
-<table class="feeds-table">
-    <tr>
-        <th>ID</th>
-        <th>name</th>
-        <th>created</th>
-    </tr>
-    {% for feed in feeds %}
-    <tr>
-        <td>{{ feed.id }}</td>
-        <td><a href="{% url "feed_view" feed.owner__username feed.name %}">{{ feed.name }}</a></td>
-        <td>{{ feed.date_created|date:"j. n. Y G:i" }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
-
+            <table class="feeds-table">
+                <tr>
+                    {# <th>ID</th> #}
+                    <th>name</th>
+                    <th>created</th>
+                    <th>Latest value</th>
+                </tr>
+                {% for feed in feeds %}
+                    <tr>
+                        {# <td>{{ feed.id }}</td> #}
+                        <td><a href="{% url "feed_view" feed.owner__username feed.name %}">{{ feed.name }}</a></td>
+                        <td>{{ feed.date_created|date:"j. n. Y G:i" }}</td>
+                        <td>{{ feed.last_value.value }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
 
 {% endblock %}

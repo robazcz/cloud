@@ -10,6 +10,7 @@
     "license": "ISC",
     "dependencies": {
       "chart.js": "^4.0.0",
-      "css.gg": "2.0.0"
+      "css.gg": "2.0.0",
+      "flatpickr": "4.6.13"
     }
   }

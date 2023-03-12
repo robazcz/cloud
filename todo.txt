@@ -2,18 +2,21 @@ API
 - DELETE dat?
 - autorizace přes token
 
-GRAF
-- tečky a celá spojnice
-
 DATA VIEW
 - využít ho k otevření dat?
 
 FEED VIEW
-- časový rozpětí
-- rozpětí podle počtu
-.. při přepnutí option ve výběru ekšly změna mezi datem a počtem
 - řazení dat
+- responzibilita - na tlačítko se objeví statistika, limitations, add value?
 - mazání všech dat v rozpětí?
 
 LOGIN
 - zapomenutý heslo?
+
+PROFILE
+- statistiky o uživateli
+- jméno
+- změna hesla
+- api klíč
+
+Logo odkazuje na aktuální stránku

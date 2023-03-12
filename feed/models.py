@@ -53,7 +53,8 @@ class Feed(models.Model):
 class Data(models.Model):
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
     value = models.DecimalField(max_digits=12, decimal_places=3) #100 000 000,000
-    date_created = models.DateTimeField(default=now)
+    date_created = models.DateTimeField(default=now().isoformat(sep=" ", timespec="seconds"))
+
 
     # def save(self, *args, **kwargs):
     #     if self.value == "NaN":

@@ -2,46 +2,24 @@
 {% load static %}
 
 {% block head %}
-<link href='{% static "node_modules/css.gg/icons/css/lock.css" %}' rel='stylesheet'>
-<link href='{% static "node_modules/css.gg/icons/css/user.css" %}' rel='stylesheet'>
+    <link href='{% static "node_modules/css.gg/icons/css/lock.css" %}' rel='stylesheet'>
+    <link href='{% static "node_modules/css.gg/icons/css/user.css" %}' rel='stylesheet'>
 {% endblock %}
 
 {% block body %}
 
-
-{#  {% if next %}TODO: https://docs.djangoproject.com/en/4.1/topics/forms/#}
-{#    {% if user.is_authenticated %}#}
-{#      <p>Your account doesn't have access to this page. To proceed,#}
-{#      please login with an account that has access.</p>#}
-{#    {% else %}#}
-{#      <p>Please login to see this page.</p>#}
-{#    {% endif %}#}
-{#  {% endif %}#}
-
-  <form method="post" action="{% url 'users_login' %}" class="login-form">
-    {% csrf_token %}
-    <h3>LOG IN</h3>
-    <table>
-      {{ form.form }}
-      <!-- <tr>
-        <td>username: </td>
-        <td><input type="text" name="username" placeholder="Username"></td>
-      </tr>
-      <tr>
-        <td>password: </td>
-        <td><input type="password" name="password" placeholder="Password"></td>
-      </tr>-->
-
-    </table>
-    {% if form.errors %}
-        <div class="error small_err">Your username and password didn't match. Please try again.</div>
-    {% endif %}
-      <div style="margin: 0.5em 0 0 0.5em;"><a href="{% url 'users_register' %}">Create account</a></div>
-      <input type="submit" value="Log in">
-      <input type="hidden" name="next" value="{{ next }}">
-  </form>
-  {# Assumes you setup the password_reset view in your URLconf #}
-  {#<p><a href="{% url 'password_reset' %}">Lost password?</a></p>#}
-
+    <form method="post" action="{% url 'users_login' %}" class="login-form input-form">
+        {% csrf_token %}
+        <h3>LOG IN</h3>
+        <table>
+            {{ form.form }}
+        </table>
+        {% if form.errors %}
+            <div class="error small_err">Your username and password didn't match. Please try again.</div>
+        {% endif %}
+        <div style="margin: 0.5em 0 0 0.5em;"><a href="{% url 'users_register' %}">Create account</a></div>
+        <input type="submit" value="Log in">
+        <input type="hidden" name="next" value="{{ next }}">
+    </form>
 
 {% endblock %}

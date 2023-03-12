@@ -1,10 +1,13 @@
+import datetime
+
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.db.models import Max, Min, Avg
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, HttpResponseForbidden, JsonResponse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.utils import dateparse
+from django.utils import timezone, dateparse
 
 from rest_framework import viewsets, permissions
 from . import serializers
@@ -20,37 +23,35 @@ from . import models, forms
 def root(request):
     return redirect("feed_list")
 @login_required
-def feed_list(request):
+def feed_list_base(request):
+    return redirect("feed_list_user", request.user.username)
+
+@login_required
+def feed_list(request, username):
+    if not match_logged_user(request.user, username):
+        raise Http404(f"You are not allowed to access!")
+
+    feeds = models.Feed.objects.filter(owner__username=username).values("id", "name", "date_created", "owner__username")
+    new_f_form = forms.NewFeed()
+
     if request.method == "POST":
         miss_i = models.Feed(owner_id=request.user.id)
-        new_f = forms.NewFeed(request.POST, instance=miss_i)
+        new_f_form = forms.NewFeed(request.POST, instance=miss_i)
         try:
-            if new_f.errors or not new_f.is_valid:
-                print(new_f)
+            if new_f_form.errors or not new_f_form.is_valid():
+                print(new_f_form)
                 raise ValidationError("Not valid.")
-            new_f.save()
+            new_f_form.save()
 
         except (IntegrityError, ValueError, ValidationError) as err:
-            if str(err) == "UNIQUE constraint failed: feed_feed.name, feed_feed.owner_id":
-                err = "This name already exists"
-                print(err)
-            else:
-                print(err)
-                err = None
-            
-            print(new_f.errors)
-            print(f"error on name? {new_f.has_error('name')}")
-            feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
-            return render(request, "feed/feed_list.html", {"user": request.user, "form": {"form":forms.NewFeed(request.POST), "errors": new_f.errors, "error":err}, "feeds": feeds})
+            if str(err) == "Feed name exists":
+                new_f_form.add_error("name", "This name already exists")
 
-        feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
-        return render(request, "feed/feed_list.html", {"user":request.user, "form": {"form":forms.NewFeed}, "feeds": feeds})
+    for feed in feeds:
+        feed["last_value"] = models.Data.objects.filter(feed_id=feed["id"]).last()
+    print(feeds)
 
-    else:
-        feeds = models.Feed.objects.filter(owner__username=request.user.username).values("id", "name", "date_created", "owner__username")
-        # print(feeds)
-
-    return render(request, "feed/feed_list.html", {"user":request.user, "form": {"form":forms.NewFeed} , "feeds": feeds})
+    return render(request, "feed/feed_list.html", {"user":request.user, "form": new_f_form , "feeds": feeds})
 
 @login_required
 def feed_view(request, username, feed_name):
@@ -62,52 +63,46 @@ def feed_view(request, username, feed_name):
     except models.Feed.DoesNotExist:
         raise Http404(f"Feed with name {feed_name} does not exist.")
     print(feed.owner)
-    options = {}
+
+    data = models.Data.objects.filter(feed__id=feed.id).order_by("-date_created")[:20]
+    op_f = forms.OptionsForm()
+    dt_f = forms.DataForm()
+
     if request.method == "POST":
-        print(request.POST)
-        options["select_cap"] = request.POST["select_cap"]
-        if request.POST["select_cap"] == "number":
-            options["select_size"] = request.POST["select_size"]
-            data = models.Data.objects.filter(feed__id = feed.id).order_by("-date_created")[:int(request.POST["select_size"])]
+        if "value" in request.POST:
+            dt_inst = models.Data(feed=feed)
+            dt_f = forms.DataForm(request.POST, instance=dt_inst)
+            if dt_f.is_valid():
+                dt_f.save()
 
-        elif request.POST["select_cap"] == "date":
-            options["from_date"] = request.POST["from_date"]
-            options["to_date"] = request.POST["to_date"]
-            data = models.Data.objects.filter(feed__id = feed.id)\
-                                      .filter(date_created__range =
-                                             (dateparse.parse_datetime(request.POST["from_date"]),
-                                              dateparse.parse_datetime(request.POST["to_date"]))).order_by("-date_created")
-
-    else:
-        data = models.Data.objects.filter(feed__id=feed.id).order_by("-date_created")[:20]
-
-    print(options)
-    return render(request, "feed/feed_view.html", {"user":request.user, "feed": feed, "data": data, "options":options})
-
-@login_required
-def new_data(request, username, feed_name):
-    try:
-        if match_logged_user(request.user, username):
-            feed = models.Feed.objects.get(name=feed_name, owner__username=username.lower())
         else:
-            raise models.Feed.DoesNotExist
-    except models.Feed.DoesNotExist:
-        raise Http404(f"Feed with name {feed_name} does not exist.")
+            limit_date = request.POST["limit_date"].split(" to ")
+            request_post_copy = request.POST.copy()
+            request_post_copy["limit_date"] = None
+            request_post_copy["limit_number"] = None
 
-    if request.method == "POST":
-        new_d = models.Data(feed=feed, value=request.POST["data_value"])
-        try:
-            new_d.full_clean()
-            new_d.save()
-        except ValidationError:
-            return HttpResponse("Value is not valid!")
+            print(request_post_copy)
+            opt_f = forms.OptionsForm(request_post_copy)
+            print(opt_f.is_valid())
+            print(opt_f.errors)
 
-    return redirect("feed_view", username, feed_name)
+            if opt_f.cleaned_data["limit_by"] == "number":
+                if request.POST["limit_number"] == "all":
+                    data = models.Data.objects.filter(feed__id=feed.id).order_by("-date_created")
+                else:
+                    data = models.Data.objects.filter(feed__id=feed.id).order_by("-date_created")[:int(request.POST["limit_number"])]
 
+            elif opt_f.cleaned_data["limit_by"] == "date":
+                data = models.Data.objects.filter(feed__id=feed.id).filter(date_created__range=
+                                                 (limit_date[0], f"{limit_date[1]}:59")).order_by("-date_created")
 
-    #data = models.Data.objects.filter(feed__id = feed.id)
+    stats = {"len": len(data)}
+    if stats["len"] != 0:
+        stats["avg"] = round(data.aggregate(Avg("value"))["value__avg"], 3)
+        stats["max"] = list(filter(lambda a: a.value == data.aggregate(Max("value"))["value__max"], data))
+        stats["min"] = list(filter(lambda a: a.value == data.aggregate(Min("value"))["value__min"], data))
 
-    #return render(request, "feed/feed_view.html", {"feed": feed, "data": data})
+    return render(request, "feed/feed_view.html", {"user":request.user, "feed": feed, "data": data, "dt": dt_f, "op": op_f, "stats": stats})
 
 @login_required
 @csrf_exempt
@@ -131,44 +126,29 @@ def data_view(request, username, feed_name, pk):
         return HttpResponse("", status=status.HTTP_200_OK)
 
 def users_login(request):
-    # print(request.GET)
-    # print(request.GET.get("next", None))
-    # try:
-    #     redirect_to = request.POST["next"]
-    # except MultiValueDictKeyError:
-
     redirect_to = request.POST.get("next", None) if request.method == "POST" else request.GET.get("next", None)
 
+    if request.user.is_authenticated:
+        return redirect("user_profile", request.user.username) if not redirect_to else redirect(redirect_to)
+
+    login_form = forms.LoginForm(label_suffix="")
+
     if request.method == "POST":
-        #print(request.POST["username"])
         username = request.POST["username"].lower()
         password = request.POST["password"]
 
-        print(f"redirect: {redirect_to}")
-
-        redirect_to = "user_profile" if redirect_to == None or redirect_to == "None" else redirect_to
-        args = username if redirect_to == "user_profile" else None
-        print(f"redirect: {redirect_to}")
+        redirect_to = ("user_profile", username) if redirect_to == None or redirect_to == "None" else redirect_to
 
         user = authenticate(request, username=username, password=password)
-        print(f"auth user {username}")
 
         if user is not None:
             login(request, user)
-            return redirect(redirect_to, args)
+            return redirect(*redirect_to)
         else:
-            return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": True, "form": forms.LoginForm(request.POST, label_suffix="")}, "user":request.user})
+            login_form = forms.LoginForm(request.POST, label_suffix="")
 
-    else:
-        print(redirect_to)
-        print(f"user auth? {request.user.is_authenticated}")
 
-        if request.user.is_authenticated:
-            return redirect("user_profile", request.user.username) if not redirect_to else redirect(redirect_to)
-        else:
-            return render(request, "feed/users/login.html", {"next": redirect_to, "form": {"errors": False, "form":forms.LoginForm(label_suffix="")}, "user": request.user})
-
-    #return render(request, "feed/users/login.html", {"next":redirect_to, "form":{"errors": False}, "user": request.user})
+    return render(request, "feed/users/login.html", {"next": redirect_to, "form": {"errors": False, "form":login_form}, "user": request.user})
 
 def match_logged_user(logged, user):
     return logged.username == user.lower()
@@ -196,33 +176,29 @@ def users_logout(request):
         #return HttpResponse(f"Logged out")
 
 def users_register(request):
-    if not request.user.is_authenticated:
-        if request.method == "GET":
-            return render(request, "feed/users/register.html", {"form": {"errors":None, "form":forms.RegisterForm}})
-        
-        elif request.method == "POST":
-            user_i = models.User(username=request.POST["username_original"].lower())
-            user = forms.RegisterForm(request.POST, instance=user_i)  #TODO: ke každý práci s username - lower username, přidat original username field
-            #user_inst = models.User.objects.create_user(username=request.POST["username"], password=request.POST["password"])
-            try:
-                # print(f"valid? {user.is_valid()}: {user.errors.as_json()}")
-                if user.errors or not user.is_valid:
-                    raise ValidationError("Error validating form")
-                user_inst = user.save()
-
-            except (IntegrityError, ValueError, ValidationError) as err:
-                if str(err) == "Username exists":
-                    user.add_error("username_original", "User with this username already exists.")
-                ex = user.errors.as_data()
-                print(ex)
-                return render(request, "feed/users/register.html", {"form": {"errors":ex, "error":True, "form":user}}) #forms.RegisterForm(request.POST)
-
-            login(request, user_inst)
-            return redirect("users_login")
-
-    else:
+    if request.user.is_authenticated:
         return redirect("user_profile_base")
-    
+
+    register_form = forms.RegisterForm()
+
+    if request.method == "POST":
+        user_i = models.User(username=request.POST["username_original"].lower())
+        register_form = forms.RegisterForm(request.POST, instance=user_i)
+        try:
+            if register_form.errors or not register_form.is_valid:
+                raise ValidationError("Error validating form")
+            user_inst = register_form.save()
+
+        except (IntegrityError, ValueError, ValidationError) as err:
+            if str(err) == "Username exists":
+                register_form.add_error("username_original", "User with this username already exists.")
+            return render(request, "feed/users/register.html", {"user": request.user, "form": register_form})
+
+        login(request, user_inst)
+        return redirect("users_login")
+
+    return render(request, "feed/users/register.html", {"user": request.user, "form": register_form})
+
 ### API ###
 """
 class UserViewSet(viewsets.ModelViewSet):
@@ -274,9 +250,9 @@ def api_data(request, username, feed_name):
                 if serial_data.is_valid():
                     serial_data.save(feed=feed)
                     return Response({'status':'Successfully created.'}, status=status.HTTP_201_CREATED)
-                
+
                 else:
-                    return Response({'error':'Data is not valid.'}, status=status.HTTP_400_BAD_REQUEST)            
+                    return Response({'error':'Data is not valid.'}, status=status.HTTP_400_BAD_REQUEST)
 
             elif request.method == "DELETE":
                 pass #TODO
@@ -285,8 +261,8 @@ def api_data(request, username, feed_name):
                 feeds_data = models.Data.objects.filter(feed__id=feed.id)
                 data_serialized = serializers.DataSerializer(feeds_data, many=True)
                 return Response(data_serialized.data)
-        
-        else: 
+
+        else:
             print("user dont match")
             return Response({'error':f'Feed with name \'{feed_name}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 

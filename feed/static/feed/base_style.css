@@ -123,11 +123,13 @@ header li a:hover, header li a.enabled{
   height: 2em;
   background-color: black;
   border-bottom: 1px solid var(--tx);
+  text-align: center !important;
 }
 
 .feeds-table th, .feeds-table td{
   padding: 0.75em;
   text-align: left;
+  position: relative;
 }
 
 .feeds-table a{
@@ -179,7 +181,7 @@ header li a:hover, header li a.enabled{
   padding: 5px;
   z-index: 1;
   top: 5px;
-  left: 0%;
+  left: 0;
 }
 
 /*.tooltip .tooltiptext::after {*/
@@ -233,7 +235,7 @@ header li a:hover, header li a.enabled{
   width: 80%;
   background-color: var(--fg);
   border-radius: 7px;
-  padding: 0px;
+  padding: 0;
   z-index: 1;
   top: 9px;
   left: 11%;
@@ -248,7 +250,7 @@ header li a:hover, header li a.enabled{
 }
 
 .login-form{
-  width: 340px;
+  max-width: 340px;
   margin: 60px auto 30px;
   padding: 1.5em;
   position: relative;
@@ -257,23 +259,24 @@ header li a:hover, header li a.enabled{
   color: var(--tx);
 }
 
-.login-form h3{
+.input-form h3{
   font-weight: bold;
   padding: 0;
   margin: 0 0 0.5em 0;
   border-bottom: 2px solid var(--tx);
 }
 
-.login-form table{
+.input-form table{
   width: 100%;
   margin-left: 0.3em;
 }
 
-.login-form label{
+.input-form label{
   font-size: 0.9em;
 }
 
-.login-form input[type=text], .login-form input[type=password]{
+.input-form input[type=text], .input-form input[type=password], .input-form input[type=number], .input-form select{
+  font-family: 'Rubik', sans-serif;
   padding: 0.5em;
   border-radius: 5px;
   width: 90%;
@@ -282,13 +285,26 @@ header li a:hover, header li a.enabled{
   color: white;
 }
 
-.login-form input[type=text]::placeholder, .login-form input[type=password]::placeholder{
+.input-form input[type=text]::placeholder, .input-form input[type=password]::placeholder{
   color: white;
 }
 
-.login-form input[type=text]:focus, .login-form input[type=password]:focus{
+.input-form input[type=text]:focus, .input-form input[type=password]:focus, .input-form input[type=number]:focus, .input-form select:focus{
   outline: 0;
   box-shadow: 0 0 0.5em white;
+}
+
+.input-form input[type=number]{
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.input-form input[type=number]::-webkit-inner-spin-button,
+.input-form input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.input-form option{
+  font-family: 'Rubik', sans-serif;
 }
 
 .login-form input[type=submit]{
@@ -302,12 +318,23 @@ header li a:hover, header li a.enabled{
   cursor: pointer;
 }
 
-.login-form input[type=submit]:active{
+.input-form input[type=submit]:active{
   box-shadow: 0 0 0.5em white;
 }
 
-.login-form input[type=submit]:hover{
+.input-form input[type=submit]:hover{
   background-color: #2b2f35;
+}
+
+.input-form .input-submit{
+  float: right;
+  padding: 0.5em;
+  margin: 0 6px 6px 6px;
+  border-radius: 8px;
+  border: solid 1px;
+  background-color: var(--fg);
+  color: var(--tx);
+  cursor: pointer;
 }
 
 .login-form th{
@@ -331,3 +358,99 @@ header li a:hover, header li a.enabled{
 .size-cont, .date-pick-cont{
   display: none;
 }
+
+.info-txt{
+  font-size:0.75em;
+  opacity: 0.6;
+  margin: 5px;
+}
+
+tr.strikeout{
+  color: gray;
+}
+
+tr.strikeout td:before {
+  content: " ";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  border-bottom: 2px solid gray;
+  width: 100%;
+}
+
+.feed-cont{
+  margin: 1em 0 0 2em;
+  display: flex;
+  flex-flow: row-reverse wrap;
+  justify-content: left;
+  column-gap: 2em;
+}
+
+.options-table{
+  margin-left: 0 !important;
+}
+
+.options-table th{
+  text-align: right;
+}
+
+.input-form .options-table input[type=text], .input-form .options-table input[type=number], .input-form .options-table select{
+  width: 15em;
+}
+
+.feed-cont .input-form{
+  height: min-content;
+  padding: 1.5em 1.5em 0.5em 1.5em;
+  background: var(--fg);
+  border-radius: 4px;
+  color: var(--tx);
+  margin: 1rem;
+}
+
+input[type=text].form-control{
+  cursor: pointer;
+}
+
+input, select {
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+}
+
+.statistics-cont{
+  margin-left: 0.5rem;
+}
+
+.statistics-cont .p{
+  margin: 0 0 1em 0;
+}
+
+.option-dates{
+  margin-left: 1rem;
+}
+
+.option-dates a{
+  text-decoration: underline;
+  color: var(--tx);
+}
+
+.feeds-table tr:target{
+  box-shadow: 0 0 0.5rem white;
+  transform: scale(1);
+  /*animation: target-fade 1s;*/
+}
+
+/* Responzivní pro telefony */
+/*.decollapsable{*/
+/*  display: none;*/
+/*  white-space: nowrap;*/
+/*}*/
+
+/*@media screen and (max-width: 650px){*/
+/*  .collapsable{*/
+/*    display: none;*/
+/*  }*/
+/*  .decollapsable{*/
+/*    display: block;*/
+/*  }*/
+/*}*/
