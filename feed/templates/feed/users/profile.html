@@ -5,6 +5,20 @@
 {% block body %}
 
 <h1>Profile of {{ user }}</h1>
+<form class="input-form" action="{% url "user_profile" user.username %}" method="POST">
+{% csrf_token %}
+    <input type="hidden" name="regenerate">
+    <table>
+        <tr>
+            <td>Your api key:</td>
+            <td>Token {{ api_key }}</td>
+        </tr>
+        <tr>
+            <td colspan="2"><input class="input-submit" type="submit" value="Regenerate"></td>
+        </tr>
+    </table>
+</form>
+<br>
 <a class="hyper-button" href="{% url 'users_logout' %}"><b>Log out!</b></a>
 
 {% endblock %}

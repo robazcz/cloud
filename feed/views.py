@@ -16,6 +16,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from . import api_permissions
 
 from . import models, forms
@@ -163,7 +164,14 @@ def user_profile(request, username):
         user_obj.username_original = user_obj.username
         user_obj.save()
 
-    return render(request, "feed/users/profile.html", {"user": request.user})
+    auth_token = Token.objects.get_or_create(user = user_obj)[0]
+    print(auth_token)
+
+    if "regenerate" in request.POST:
+        Token.objects.get(user = user_obj).delete()
+        auth_token = Token.objects.create(user = user_obj)
+
+    return render(request, "feed/users/profile.html", {"user": request.user, "api_key": auth_token})
 
 @login_required
 def user_profile_base(request):

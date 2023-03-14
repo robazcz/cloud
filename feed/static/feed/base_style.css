@@ -247,6 +247,13 @@ header li a:hover, header li a.enabled{
   color: var(--tx);
   text-decoration: none;
   border-radius: 15px;
+  /*border: solid 1px var(--tx);*/
+}
+
+.hyper-button:hover {
+  /*border: solid 1px var(--hl);*/
+  color: var(--hl);
+  background-color: #2C2C2C;
 }
 
 .login-form{
@@ -267,7 +274,7 @@ header li a:hover, header li a.enabled{
 }
 
 .input-form table{
-  width: 100%;
+  /*width: 100%;*/
   margin-left: 0.3em;
 }
 
