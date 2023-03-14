@@ -278,6 +278,10 @@ header li a:hover, header li a.enabled{
   margin-left: 0.3em;
 }
 
+.login-form table{
+  width: 100%;
+}
+
 .input-form label{
   font-size: 0.9em;
 }

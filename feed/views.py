@@ -17,7 +17,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from . import api_permissions
 
 from . import models, forms
 
@@ -133,23 +132,25 @@ def users_login(request):
         return redirect("user_profile", request.user.username) if not redirect_to else redirect(redirect_to)
 
     login_form = forms.LoginForm(label_suffix="")
+    errors = False
 
     if request.method == "POST":
         username = request.POST["username"].lower()
         password = request.POST["password"]
 
-        redirect_to = ("user_profile", username) if redirect_to == None or redirect_to == "None" else redirect_to
+        redirect_to = "user_profile_base" if redirect_to == None or redirect_to == "None" else redirect_to
 
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
-            return redirect(*redirect_to)
+            return redirect(redirect_to)
         else:
             login_form = forms.LoginForm(request.POST, label_suffix="")
+            errors = True
 
 
-    return render(request, "feed/users/login.html", {"next": redirect_to, "form": {"errors": False, "form":login_form}, "user": request.user})
+    return render(request, "feed/users/login.html", {"next": redirect_to, "form": {"errors": errors, "form":login_form}, "user": request.user})
 
 def match_logged_user(logged, user):
     return logged.username == user.lower()
@@ -214,23 +215,6 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 """
-
-#@csrf_exempt
-@api_view(["GET","POST"]) #https://www.django-rest-framework.org/tutorial/4-authentication-and-permissions/#object-level-permissions
-@permission_classes([api_permissions.IsOwner]) #TODO: check_object_permissions, generating tokens for api https://www.django-rest-framework.org/api-guide/authentication/#generating-tokens
-def api_users(request):
-    if request.method == "GET":
-        users = models.User.objects.all()
-        serial_users = serializers.UserSerializer(users, many=True)
-        return Response(serial_users.data)
-
-    elif request.method == "POST":
-        data = JSONParser().parse(request)
-        #print(data)
-        serializer = serializers.UserSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response("valid" if serializer.is_valid() else "invalid", status=status.HTTP_201_CREATED)
 
 @api_view(["GET", "POST", "DELETE"])
 @permission_classes([permissions.IsAuthenticated])
