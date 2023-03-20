@@ -1,5 +1,6 @@
 import datetime
 
+import pytz
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Max, Min, Avg
@@ -8,6 +9,8 @@ from django.http import HttpResponse, Http404, HttpResponseForbidden, JsonRespon
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone, dateparse
+from django.utils.timezone import make_aware
+from django.conf import settings
 
 from rest_framework import viewsets, permissions
 from . import serializers
@@ -19,6 +22,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 
 from . import models, forms
+
 
 def root(request):
     return redirect("feed_list")
@@ -81,6 +85,7 @@ def feed_view(request, username, feed_name):
             request_post_copy["limit_date"] = None
             request_post_copy["limit_number"] = None
 
+            print(limit_date)
             print(request_post_copy)
             opt_f = forms.OptionsForm(request_post_copy)
             print(opt_f.is_valid())
@@ -94,7 +99,9 @@ def feed_view(request, username, feed_name):
 
             elif opt_f.cleaned_data["limit_by"] == "date":
                 data = models.Data.objects.filter(feed__id=feed.id).filter(date_created__range=
-                                                 (limit_date[0], f"{limit_date[1]}:59")).order_by("-date_created")
+                        (make_aware(dateparse.parse_datetime(limit_date[0]), pytz.timezone(settings.TIME_ZONE)),
+                         make_aware(dateparse.parse_datetime(limit_date[1]), pytz.timezone(settings.TIME_ZONE)
+                                    ).replace(second=59, microsecond=999999))).order_by("-date_created")
 
     stats = {"len": len(data)}
     if stats["len"] != 0:
@@ -207,6 +214,10 @@ def users_register(request):
         return redirect("users_login")
 
     return render(request, "feed/users/register.html", {"user": request.user, "form": register_form})
+
+def index(request):
+    return HttpResponse("Ahoj světe!")
+
 
 ### API ###
 """

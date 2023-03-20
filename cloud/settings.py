@@ -28,6 +28,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []#["192.168.0.151"]
 
+# CORS_ALLOWED_ORIGINS = ["https://314b-2a02-768-c830-75c2-edb6-70fe-5268-d55c.eu.ngrok.io"]
+#
+# CSRF_TRUSTED_ORIGINS = ["https://314b-2a02-768-c830-75c2-edb6-70fe-5268-d55c.eu.ngrok.io"]
+
 
 # Application definition
 
