@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone, dateparse
 from django.utils.timezone import make_aware
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
 
 from rest_framework import viewsets, permissions
 from . import serializers
@@ -24,7 +25,7 @@ from rest_framework.authtoken.models import Token
 from . import models, forms
 
 
-def root(request):
+def index(request):
     return redirect("feed_list")
 @login_required
 def feed_list_base(request):
@@ -46,6 +47,7 @@ def feed_list(request, username):
                 print(new_f_form)
                 raise ValidationError("Not valid.")
             new_f_form.save()
+            return redirect("feed_list", username)
 
         except (IntegrityError, ValueError, ValidationError) as err:
             if str(err) == "Feed name exists":
@@ -69,7 +71,7 @@ def feed_view(request, username, feed_name):
     print(feed.owner)
 
     data = models.Data.objects.filter(feed__id=feed.id).order_by("-date_created")[:20]
-    op_f = forms.OptionsForm()
+    opt_f = forms.OptionsForm()
     dt_f = forms.DataForm()
 
     if request.method == "POST":
@@ -78,6 +80,7 @@ def feed_view(request, username, feed_name):
             dt_f = forms.DataForm(request.POST, instance=dt_inst)
             if dt_f.is_valid():
                 dt_f.save()
+                return redirect("feed_view", username, feed_name)
 
         else:
             limit_date = request.POST["limit_date"].split(" to ")
@@ -85,11 +88,7 @@ def feed_view(request, username, feed_name):
             request_post_copy["limit_date"] = None
             request_post_copy["limit_number"] = None
 
-            print(limit_date)
-            print(request_post_copy)
             opt_f = forms.OptionsForm(request_post_copy)
-            print(opt_f.is_valid())
-            print(opt_f.errors)
 
             if opt_f.cleaned_data["limit_by"] == "number":
                 if request.POST["limit_number"] == "all":
@@ -109,7 +108,7 @@ def feed_view(request, username, feed_name):
         stats["max"] = list(filter(lambda a: a.value == data.aggregate(Max("value"))["value__max"], data))
         stats["min"] = list(filter(lambda a: a.value == data.aggregate(Min("value"))["value__min"], data))
 
-    return render(request, "feed/feed_view.html", {"user":request.user, "feed": feed, "data": data, "dt": dt_f, "op": op_f, "stats": stats})
+    return render(request, "feed/feed_view.html", {"user":request.user, "feed": feed, "data": data, "dt": dt_f, "op": opt_f, "stats": stats})
 
 @login_required
 @csrf_exempt
@@ -165,11 +164,12 @@ def match_logged_user(logged, user):
 @login_required
 def user_profile(request, username):
     if not match_logged_user(request.user, username):
-        return HttpResponseForbidden(render(request, "feed/not_allowed.html"))
+        raise PermissionDenied
+        # return HttpResponseForbidden(render(request, "feed/403.html"))
         #return HttpResponseForbidden("You are NOT ALLOWED to see this!")
     user_obj = models.User.objects.get(id=request.user.id)
-    if user_obj.username_original == "":
-        user_obj.username_original = user_obj.username
+    if user_obj.display_name == "":
+        user_obj.display_name = user_obj.username
         user_obj.save()
 
     auth_token = Token.objects.get_or_create(user = user_obj)[0]
@@ -198,7 +198,7 @@ def users_register(request):
     register_form = forms.RegisterForm()
 
     if request.method == "POST":
-        user_i = models.User(username=request.POST["username_original"].lower())
+        user_i = models.User(username=request.POST["display_name"].lower())
         register_form = forms.RegisterForm(request.POST, instance=user_i)
         try:
             if register_form.errors or not register_form.is_valid:
@@ -207,7 +207,7 @@ def users_register(request):
 
         except (IntegrityError, ValueError, ValidationError) as err:
             if str(err) == "Username exists":
-                register_form.add_error("username_original", "User with this username already exists.")
+                register_form.add_error("display_name", "User with this username already exists.")
             return render(request, "feed/users/register.html", {"user": request.user, "form": register_form})
 
         login(request, user_inst)
@@ -215,9 +215,14 @@ def users_register(request):
 
     return render(request, "feed/users/register.html", {"user": request.user, "form": register_form})
 
-def index(request):
-    return HttpResponse("Ahoj světe!")
+def http_403(request, exception):
+    return render(request, "feed/403.html", {"ex": exception}, status=403)
 
+def http_404(request, exception):
+    return render(request, "feed/404.html", {"ex": exception}, status=404)
+
+def http_500(request):
+    return render(request, "feed/500.html", status=500)
 
 ### API ###
 """
@@ -242,15 +247,17 @@ def api_data(request, username, feed_name):
                 serial_data = serializers.DataSerializer(data=request.data, many=True)
 
                 ################    serial_data.update({"feed":feed})
+                print(serial_data)
                 print(serial_data.initial_data)
 
-                for data in serial_data.initial_data:
-                    if isinstance(data["value"], str):
-                        try:
-                            data["value"] = float(data["value"])
-                        except ValueError:
-                            return Response({'error':'Data is not valid. (string, not int/float)'}, status=status.HTTP_400_BAD_REQUEST)
+                # for data in serial_data.initial_data:
+                #     if isinstance(data["value"], str):
+                #         try:
+                #             data["value"] = float(data["value"])
+                #         except ValueError:
+                #             return Response({'error':'Data is not valid. (string, not int/float)'}, status=status.HTTP_400_BAD_REQUEST)
                 if serial_data.is_valid():
+                    print(serial_data.data)
                     serial_data.save(feed=feed)
                     return Response({'status':'Successfully created.'}, status=status.HTTP_201_CREATED)
 

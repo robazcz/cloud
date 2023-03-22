@@ -1,11 +1,10 @@
 {% extends "feed/base.html" %}
-
-{% block head %}
-<title>ERROR 403</title>
-{% endblock %}
+{% block title %}ERROR 403{% endblock %}
 
 {% block body %}
+    <h1 class="error">403</h1>
     <h2 class="error">You are not allowed to do that!</h2>
+    <p>{{ ex }}</p>
 
     <img src="https://http.cat/403.jpg" alt="403 code" class="error err-img">
 {% endblock %}

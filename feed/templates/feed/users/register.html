@@ -6,6 +6,8 @@
     <link href='{% static "node_modules/css.gg/icons/css/user.css" %}' rel='stylesheet'>
 {% endblock %}
 
+{% block title %}REGISTER{% endblock %}
+
 {% block body %}
 
     <form method="post" action="{% url 'users_register' %}" class="login-form input-form">

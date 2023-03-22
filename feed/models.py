@@ -17,7 +17,7 @@ class User(AbstractUser):
         validators=[RegexValidator("^[a-z0-9-_.]+$", "Lowered username contains invalid character.")]
         #validators=[username_validator] #https://docs.djangoproject.com/en/4.1/ref/forms/validation/
     )
-    username_original = models.CharField(
+    display_name = models.CharField(
         max_length=20,
         unique=True,
         validators=[RegexValidator("^[a-zA-Z0-9-_.]+$", "Username contains invalid character.")],
@@ -25,7 +25,7 @@ class User(AbstractUser):
     )
 
     def __str__(self):
-        return self.username_original
+        return self.display_name
 
     class Meta:
         pass
@@ -39,8 +39,8 @@ class User(AbstractUser):
     #         raise ValidationError("Username contains invalid character. Try again.", code="invalid")
 
 class Feed(models.Model):
-    name = models.CharField(max_length=20, validators=[RegexValidator("^[a-zA-Z0-9-_.]+$",
-                                                                      "Feeds name contains invalid character.")],
+    name = models.CharField(max_length=20, validators=[RegexValidator(
+                            "^[a-zA-Z0-9-_.]+$", "Feeds name contains invalid character.")],
                             error_messages={"unique_name_owner": "Already exists"})
     date_created = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE) #, default=
@@ -50,13 +50,10 @@ class Feed(models.Model):
             models.UniqueConstraint(fields=['name', 'owner'], name='unique_name_owner', violation_error_message="Exists")
         ]
 
+    def __str__(self):
+        return self.name
+
 class Data(models.Model):
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
     value = models.DecimalField(max_digits=12, decimal_places=3) #100 000 000,000
     date_created = models.DateTimeField(default=now)
-
-
-    # def save(self, *args, **kwargs):
-    #     if self.value == "NaN":
-    #         raise ValidationError("NaN")
-    #     super().save(self, *args, **kwargs)

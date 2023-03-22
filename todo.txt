@@ -1,6 +1,5 @@
 API
 - DELETE dat?
-- autorizace přes token
 
 DATA VIEW
 - využít ho k otevření dat?
@@ -17,6 +16,9 @@ PROFILE
 - statistiky o uživateli
 - jméno
 - změna hesla
-- api klíč
 
-Logo odkazuje na aktuální stránku
+
+errory 404, 403, 500
+
+min, max responzivní změny grafu
+zobrazovaná data - v grafu všechny

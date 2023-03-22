@@ -6,6 +6,8 @@
     <link href='{% static "node_modules/css.gg/icons/css/user.css" %}' rel='stylesheet'>
 {% endblock %}
 
+{% block title %}LOGIN{% endblock %}
+
 {% block body %}
 
     <form method="post" action="{% url 'users_login' %}" class="login-form input-form">

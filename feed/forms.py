@@ -45,16 +45,16 @@ class RegisterForm(authforms.UserCreationForm):
     template_name = "form_snippet.html"  # Custom template
     class Meta(authforms.UserCreationForm.Meta):
         model = models.User
-        fields = ["username_original"]
-        field_classes = {"username_original": authforms.UsernameField}
-        labels = {"username_original":"Username"}
+        fields = ["display_name"]
+        field_classes = {"display_name": authforms.UsernameField}
+        labels = {"display_name":"Username"}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["username_original"].label = "Username"
+        self.fields["display_name"].label = "Username"
         self.fields["password1"].label = "Password"
         self.fields["password2"].label = "Confirm_password"
-        self.fields["username_original"].widget.attrs["placeholder"] = "Username"
+        self.fields["display_name"].widget.attrs["placeholder"] = "Username"
         self.fields["password1"].widget.attrs["placeholder"] = "Password"
         self.fields["password2"].widget.attrs["placeholder"] = "Confirm password"
 
@@ -70,7 +70,7 @@ class RegisterForm(authforms.UserCreationForm):
 
 class OptionsForm(forms.Form):
     template_name = "form_snippet.html"
-    limit_by = forms.ChoiceField(label= "", choices = (("number", "number of records"), ("date", "from dato to date")))
+    limit_by = forms.ChoiceField(label= "", choices = (("number", "number of records"), ("date", "from date to date")))
     limit_number = forms.ChoiceField(label = "", required=False, choices = (("5", "5"), ("10", "10"), ("20", "20"), ("50", "50"), ("100", "100"), ("200", "200"), ("all", "all")))
     limit_date = forms.DateTimeField(label="", required=False)
     # limit_date_to = forms.DateTimeField(label="To", required=False)

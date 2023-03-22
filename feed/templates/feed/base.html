@@ -7,18 +7,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" type="image/png" href="{% static 'feed/favicon.ico' %}"/>
     <link rel="stylesheet" href="{% static 'feed/base_style.css' %}">
-    <title>{% block title %}default title{% endblock %}</title>
+    <title>{% block title %}Cloud{% endblock %}</title>
     {% block head %}{% endblock %}
 </head>
 <body>
     <header>
-        <ul><li class="logo"><a href="">Cloud</a></li>
+        <ul><li class="logo"><a href="{% url 'feed_list' %}">Cloud</a></li>
             <li><a class="{% block feeds %}{% endblock %}" href="{% url 'feed_list' %}">feeds</a></li>
             <li style="margin-left:auto"><a class="{% block profile %}{% endblock %}" href="{% url 'user_profile_base' %}">{% if user.is_authenticated %}{{ user }}{% else %}Login{% endif %}</a></li>
         </ul>
     </header>
     <main>
-        {% block body %} default text {% endblock %}
+        {% block body %} Lorem Ipsum {% endblock %}
     </main>
 </body>
 </html>

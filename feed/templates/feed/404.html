@@ -1,0 +1,11 @@
+{% extends "feed/base.html" %}
+
+{% block title %}ERROR 404{% endblock %}
+
+{% block body %}
+    <h1 class="error">404</h1>
+    <h2 class="error">Page not found</h2>
+    <p>{{ ex }}</p>
+
+    <img src="https://http.cat/404.jpg" alt="403 code" class="error err-img">
+{% endblock %}
