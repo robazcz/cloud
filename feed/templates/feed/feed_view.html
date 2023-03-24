@@ -162,19 +162,17 @@
 
         document.getElementById("id_limit_number").addEventListener("change", () => document.getElementById("option_form").submit());
 
-        let option_default_date = [new Date(Date.now() - 86400000), new Date()] //datum dnešní a o den menší
+        let option_default_date = [new Date(Date.now() - 86400000), new Date()] //datum dnešní a o den menší, NEMAZAT
 
 
         {% if data|length != 0 %} //když nejsou žádná data k zobrazení
-            var lab = [];
+            let lab = [];
             {% for d in data %} lab.push({value:{{ d.value }}, date: new Date("{{ d.date_created.isoformat }}")});
             {% endfor %}
 
-            console.log(lab);
             lab = lab.reverse();
-            console.log(lab);
 
-            var xtime = tobj => {
+            let xtime = tobj => {
                 return `${tobj.getHours()}:${tobj.getMinutes().toString().length === 1 ? "0" + tobj.getMinutes() : tobj.getMinutes()}`
             }
 
@@ -187,7 +185,7 @@
                         datasets: [{
                             label: "{{ feed.name }}",
                             data: lab.map(i => i.value),
-                            backgroundColor: "rgba(255, 251, 10, 0.75)",  //"#fffb0a",
+                            backgroundColor: "rgba(255, 251, 10, 0.75)",
                             borderColor: "#e7e571",
                             pointStyle: 'circle',
                             pointRadius: 2,

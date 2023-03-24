@@ -54,7 +54,7 @@ def feed_list(request, username):
                 new_f_form.add_error("name", "This name already exists")
 
     for feed in feeds:
-        feed["last_value"] = models.Data.objects.filter(feed_id=feed["id"]).last()
+        feed["last_value"] = models.Data.objects.filter(feed_id=feed["id"]).order_by("-date_created").last()
     print(feeds)
 
     return render(request, "feed/feed_list.html", {"user":request.user, "form": new_f_form , "feeds": feeds})
@@ -90,17 +90,18 @@ def feed_view(request, username, feed_name):
 
             opt_f = forms.OptionsForm(request_post_copy)
 
-            if opt_f.cleaned_data["limit_by"] == "number":
-                if request.POST["limit_number"] == "all":
-                    data = models.Data.objects.filter(feed__id=feed.id).order_by("-date_created")
-                else:
-                    data = models.Data.objects.filter(feed__id=feed.id).order_by("-date_created")[:int(request.POST["limit_number"])]
+            if opt_f.is_valid():
+                if opt_f.cleaned_data["limit_by"] == "number":
+                    if request.POST["limit_number"] == "all":
+                        data = models.Data.objects.filter(feed__id=feed.id).order_by("-date_created")
+                    else:
+                        data = models.Data.objects.filter(feed__id=feed.id).order_by("-date_created")[:int(request.POST["limit_number"])]
 
-            elif opt_f.cleaned_data["limit_by"] == "date":
-                data = models.Data.objects.filter(feed__id=feed.id).filter(date_created__range=
-                        (make_aware(dateparse.parse_datetime(limit_date[0]), pytz.timezone(settings.TIME_ZONE)),
-                         make_aware(dateparse.parse_datetime(limit_date[1]), pytz.timezone(settings.TIME_ZONE)
-                                    ).replace(second=59, microsecond=999999))).order_by("-date_created")
+                elif opt_f.cleaned_data["limit_by"] == "date":
+                    data = models.Data.objects.filter(feed__id=feed.id).filter(date_created__range=
+                            (make_aware(dateparse.parse_datetime(limit_date[0]), pytz.timezone(settings.TIME_ZONE)),
+                             make_aware(dateparse.parse_datetime(limit_date[1]), pytz.timezone(settings.TIME_ZONE)
+                                        ).replace(second=59, microsecond=999999))).order_by("-date_created")
 
     stats = {"len": len(data)}
     if stats["len"] != 0:
@@ -225,12 +226,6 @@ def http_500(request):
     return render(request, "feed/500.html", status=500)
 
 ### API ###
-"""
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = models.User.objects.all().order_by('-date_joined')
-    serializer_class = serializers.UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
-"""
 
 @api_view(["GET", "POST", "DELETE"])
 @permission_classes([permissions.IsAuthenticated])
@@ -238,9 +233,7 @@ def api_data(request, username, feed_name):
         if match_logged_user(request.user, username):
             try:
                 feed = models.Feed.objects.get(name=feed_name, owner__username=username.lower())
-                #print(feed)
             except models.Feed.DoesNotExist:
-                print("feed does not exist")
                 return Response({'error':f'Feed with name \'{feed_name}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
             if request.method == "POST":
@@ -259,7 +252,7 @@ def api_data(request, username, feed_name):
                 if serial_data.is_valid():
                     print(serial_data.data)
                     serial_data.save(feed=feed)
-                    return Response({'status':'Successfully created.'}, status=status.HTTP_201_CREATED)
+                    return Response({'status':'Data successfully created.'}, status=status.HTTP_201_CREATED)
 
                 else:
                     return Response({'error':'Data is not valid.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -273,7 +266,6 @@ def api_data(request, username, feed_name):
                 return Response(data_serialized.data)
 
         else:
-            print("user dont match")
             return Response({'error':f'Feed with name \'{feed_name}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -288,13 +280,17 @@ def api_feeds(request, username):
             return Response({'error': f'User with name \'{username}\' does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
         if request.method == "POST":
-            serialized_feed = serializers.FeedSerializer(data=request.data)
+            serialized_feed = serializers.FeedSerializer(data=request.data, many=True)
             print(serialized_feed.initial_data)
-            if serialized_feed.is_valid():
-                user = models.User.objects.get(username=username.lower())
-                serialized_feed.save(owner=user)
-                return Response({'status':f'Feed \'{serialized_feed.data.get("name")}\' successfully created.'}, status=status.HTTP_201_CREATED)
-            else:
+            try:
+                if serialized_feed.is_valid():
+                    user = models.User.objects.get(username=username.lower())
+                    serialized_feed.save(owner=user)
+                    return Response({'status':f'Feed{"s" if len(serialized_feed.data) > 1 else ""} successfully created.'}, status=status.HTTP_201_CREATED)
+                else:
+                    raise ValidationError("invalid")
+
+            except (ValidationError, IntegrityError):
                 return Response({'error': 'Feed is not valid.'}, status=status.HTTP_400_BAD_REQUEST)
 
         else:
