@@ -47,7 +47,7 @@ def feed_list(request, username):
                 print(new_f_form)
                 raise ValidationError("Not valid.")
             new_f_form.save()
-            return redirect("feed_list", username)
+            return redirect("feed_list")
 
         except (IntegrityError, ValueError, ValidationError) as err:
             if str(err) == "Feed name exists":
