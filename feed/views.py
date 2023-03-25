@@ -217,13 +217,13 @@ def users_register(request):
     return render(request, "feed/users/register.html", {"user": request.user, "form": register_form})
 
 def http_403(request, exception):
-    return render(request, "feed/403.html", {"ex": exception}, status=403)
+    return render(request, "403.html", {"ex": exception}, status=403)
 
 def http_404(request, exception):
-    return render(request, "feed/404.html", {"ex": exception}, status=404)
+    return render(request, "404.html", {"ex": exception}, status=404)
 
 def http_500(request):
-    return render(request, "feed/500.html", status=500)
+    return render(request, "500.html", status=500)
 
 ### API ###
 
