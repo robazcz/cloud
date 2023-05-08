@@ -151,6 +151,20 @@
 
         ch_method();
 
+        let check_data_timer = setInterval(() => {
+            fetch(window.location.href + "datacheck/", {
+                method:"post",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({latest_id: {{ data.first.id }}})
+            }).then(res => res.json()).then(res => {
+                if (res.latest_id !== {{ data.first.id }}){
+                    location.reload();
+                }
+            })
+        }, 10000);
+
         let default_number_option = document.createElement("option");
         default_number_option.value = {{ data|length }};
         default_number_option.innerHTML = {{ data|length }};

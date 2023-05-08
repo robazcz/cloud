@@ -1,4 +1,5 @@
 import datetime
+import json
 
 import pytz
 from django.core.exceptions import ValidationError
@@ -54,7 +55,7 @@ def feed_list(request, username):
                 new_f_form.add_error("name", "This name already exists")
 
     for feed in feeds:
-        feed["last_value"] = models.Data.objects.filter(feed_id=feed["id"]).order_by("-date_created").last()
+        feed["last_value"] = models.Data.objects.filter(feed_id=feed["id"]).order_by("-date_created").first()
     print(feeds)
 
     return render(request, "feed/feed_list.html", {"user":request.user, "form": new_f_form , "feeds": feeds})
@@ -131,6 +132,14 @@ def data_view(request, username, feed_name, pk):
         data.delete()
         print("deleted")
         return HttpResponse("", status=status.HTTP_200_OK)
+
+@login_required
+@csrf_exempt
+def data_check(request, username, feed_name):
+    feed = models.Feed.objects.get(name=feed_name, owner__username=request.user)
+    latest = models.Data.objects.filter(feed__id=feed.id).order_by("-date_created").first()
+
+    return JsonResponse({'latest_id': latest.id})
 
 def users_login(request):
     redirect_to = request.POST.get("next", None) if request.method == "POST" else request.GET.get("next", None)
