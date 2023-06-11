@@ -1,0 +1,4 @@
+venv
+ui_cloud/migrations
+db.sqlite3
+*/__pycache__
