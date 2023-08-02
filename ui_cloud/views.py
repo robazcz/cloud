@@ -73,11 +73,12 @@ class FeedView(FormMixin, ListView):
 
     #feed_name = name=kwargs["name"]
 
-    def post(self, request):
+    def post(self, request, name):
         form = self.get_form()
+        print(name)
 
         if form.is_valid():
-            return self.form_valid(form)
+            return self.form_valid(form, name)
         else:
             return self.form_invalid(form)
 
@@ -88,10 +89,10 @@ class FeedView(FormMixin, ListView):
         return self.values
     
     def get_success_url(self):
-        return reverse("FeedView", self.kwargs["name"])
+        return reverse("FeedView", args=[self.kwargs["name"]])
     
-    def form_valid(self, form):
-        form.instance.owner = self.request.user
+    def form_valid(self, form, name):
+        form.instance.feed = get_object_or_404(Feed, owner__username=self.request.user.username, name=self.kwargs["name"])
         print(form.cleaned_data)
         form.save()
         return super(FeedView, self).form_valid(form)
