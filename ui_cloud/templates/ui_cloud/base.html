@@ -7,8 +7,13 @@
     <link rel="stylesheet" href="{% static 'node_modules/bootstrap/dist/css/bootstrap.css' %}">
     <title>Document</title>
 </head>
-<body style="margin: 1em">
-    <main>
+<body class="m-3">
+    <header>
+        <nav class="navbar navbar-light bg-secondary">
+            <a class="navbar-brand navbar-expand-sm p-2" href="/overview">Cloud</a>
+        </nav>
+    </header>
+    <main class="mt-1">
         {% block main %}
         
         {% endblock main %}

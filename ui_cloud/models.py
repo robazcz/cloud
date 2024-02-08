@@ -14,11 +14,10 @@ class User(AbstractUser):
                                    "Lowered username contains invalid character.")]
     )
 
-    display_name = models.CharField(
-        max_length=20,
-        unique=True,
-        validators=[RegexValidator("^[a-zA-Z0-9-_.]+$", 
-                                   "Username contains invalid character.")],
+    display_name = models.CharField(max_length=20,
+                                    unique=True,
+                                    validators=[RegexValidator("^[a-zA-Z0-9-_.]+$", 
+                                    "Username contains invalid character.")],
         error_messages={"unique":"User with this username already exists."}
     )
 
@@ -27,7 +26,8 @@ class User(AbstractUser):
     
 class Feed(models.Model):
     name = models.CharField(max_length=20, 
-                            validators=[RegexValidator("^[a-zA-Z0-9-_.]+$", "Feeds name contains invalid character.")],
+                            validators=[RegexValidator("^[a-zA-Z0-9-_.]+$", 
+                            "Feeds name contains invalid character.")],
                             error_messages={"unique_name_owner": "Already exists"})
     date_created = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -46,3 +46,4 @@ class Data(models.Model):
     feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
     value = models.DecimalField(max_digits=12, decimal_places=3) #100 000 000,000
     date_created = models.DateTimeField(default=now)
+    

@@ -8,9 +8,28 @@
     <input type="submit" value="add">
 </form>
 
-{% for value in value_list %}
+{% comment %} {% for value in value_list %}
     <div>{{ value.id }} | {{ value.value }} | {{ value.date_created|date:"j. n. Y G:i" }}</div>
-{% endfor %}
+{% endfor %} {% endcomment %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Id</th>
+            <th scope="col">Value</th>
+            <th scope="col">Created at</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for value in value_list %}
+    <tr>
+        <td>{{ value.id }}</td>
+        <td>{{ value.value }}</td>
+        <td>{{ value.date_created|date:"j. n. Y G:i" }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 
 <div class="pagination">
     <span class="step-links">
