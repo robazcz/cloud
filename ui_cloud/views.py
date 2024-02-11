@@ -18,6 +18,8 @@ class Login(View):
     #model = User
 
     def get(self, request):
+        if request.user.is_authenticated:
+            return redirect("Overview")
         form = self.form_class()
         redir = request.GET.get("next", "Overview")
         return render(request, self.template, {"form": form, "next": redir})
